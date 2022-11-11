@@ -25,7 +25,7 @@ public class JavaChatClientMain extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
+		/*EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					JavaChatClientMain frame = new JavaChatClientMain();
@@ -34,7 +34,8 @@ public class JavaChatClientMain extends JFrame {
 					e.printStackTrace();
 				}
 			}
-		});
+		});*/
+		new RoomList("user1", "127.0.0.1", "30000");
 	}
 
 	/**
