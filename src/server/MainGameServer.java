@@ -1,6 +1,5 @@
 package server;
-// JavaChatServer.java
-// Java Chatting Server
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -25,14 +24,14 @@ import java.util.Vector;
 import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 
-public class JavaChatServer extends JFrame {
+public class MainGameServer extends JFrame {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	JTextArea textArea;
+	private JTextArea textArea;
 	private JTextField txtPortNumber;
 
 	private ServerSocket socket; // 서버소켓
@@ -47,7 +46,7 @@ public class JavaChatServer extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					JavaChatServer frame = new JavaChatServer();
+					MainGameServer frame = new MainGameServer();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -59,7 +58,7 @@ public class JavaChatServer extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public JavaChatServer() {
+	public MainGameServer() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 338, 386);
 		contentPane = new JPanel();
@@ -95,8 +94,8 @@ public class JavaChatServer extends JFrame {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				AppendText("Chat Server Running..");
-				btnServerStart.setText("Chat Server Running..");
+				AppendText("Game Server Running..");
+				btnServerStart.setText("Game Server Running..");
 				btnServerStart.setEnabled(false); // 서버를 더이상 실행시키지 못 하게 막는다
 				txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
 				AcceptServer accept_server = new AcceptServer();
@@ -172,7 +171,7 @@ public class JavaChatServer extends JFrame {
 		}
 		public void Login() {
 			AppendText("새로운 참가자 " + UserName + " 입장.");
-			WriteOne("Welcome to Java chat server\n");
+			WriteOne("Welcome to PuyoPuyo Game server\n");
 			WriteOne(UserName + "님 환영합니다.\n"); // 연결된 사용자에게 정상접속을 알림
 			String msg ="["+UserName+"]님이 입장 하였습니다.\n";
 			WriteAll(msg); // 아직 user_vc에 새로 입장한 user는 포함되지 않았다.

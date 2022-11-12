@@ -1,6 +1,5 @@
 package client;
-// JavaChatClientView.java
-// 실질적인 채팅 창
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -26,7 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 
-public class JavaChatClientView extends JFrame {
+public class MainGameClientView extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtInput;
 	private String UserName;
@@ -44,7 +43,7 @@ public class JavaChatClientView extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public JavaChatClientView(String username, String ip_addr, String port_no) {
+	public MainGameClientView(String username, String ip_addr, String port_no) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 392, 462);
 		contentPane = new JPanel();

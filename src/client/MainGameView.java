@@ -1,0 +1,64 @@
+package client;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
+public class MainGameView extends JFrame {
+
+	private JPanel contentPane;
+	private Image mainBackGround;
+	
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					new MainGameView();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the main frame.
+	 */
+	public MainGameView() {
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 640, 510);
+		setVisible(true);
+		setTitle("PuyoPuyo2!");
+		setResizable(false);
+		setLayout(null);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		
+		try { // 배경화면 가져오기, 리소스 수정 필요
+			 mainBackGround = ImageIO.read(new File("../PYPY/src/resource/mainBackGround.bmp"));
+		} catch(IOException e) {
+			JOptionPane.showMessageDialog(null,  "이미지 불러오기 실패");
+			System.exit(0);
+		}
+
+		setContentPane(contentPane);
+		contentPane.paint(getGraphics());
+		
+	}
+	
+	public void paint(Graphics g) {
+		
+		g.drawImage(mainBackGround, 0, 0, null);
+	}
+
+}

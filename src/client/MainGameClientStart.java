@@ -1,5 +1,4 @@
 package client;
-// JavaChatClientMain.java
 // Java Client Ω√¿€import java.awt.BorderLayout;
 
 import java.awt.EventQueue;
@@ -14,7 +13,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class JavaChatClientMain extends JFrame {
+public class MainGameClientStart extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txtUserName;
@@ -28,7 +27,7 @@ public class JavaChatClientMain extends JFrame {
 		/*EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					JavaChatClientMain frame = new JavaChatClientMain();
+					MainGameClientStart frame = new MainGameClientStart();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -41,7 +40,7 @@ public class JavaChatClientMain extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public JavaChatClientMain() {
+	public MainGameClientStart() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 254, 321);
 		contentPane = new JPanel();
@@ -97,7 +96,7 @@ public class JavaChatClientMain extends JFrame {
 			String username = txtUserName.getText().trim();
 			String ip_addr = txtIpAddress.getText().trim();
 			String port_no = txtPortNumber.getText().trim();
-			JavaChatClientView view = new JavaChatClientView(username, ip_addr, port_no);
+			MainGameClientView view = new MainGameClientView(username, ip_addr, port_no);
 			setVisible(false);
 		}
 	}
