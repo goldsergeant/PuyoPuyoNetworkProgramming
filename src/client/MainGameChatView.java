@@ -25,7 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 
-public class MainGameClientView extends JFrame {
+public class MainGameChatView extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtInput;
 	private String UserName;
@@ -40,10 +40,16 @@ public class MainGameClientView extends JFrame {
 	//private JTextArea textArea;
 	private JTextPane textArea;
 	
+	// 임시로 연결
+	private MainGameView game;
+	
 	/**
 	 * Create the frame.
 	 */
-	public MainGameClientView(String username, String ip_addr, String port_no) {
+	public MainGameChatView(String username, String ip_addr, String port_no) {
+		
+		game = new MainGameView();
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 392, 462);
 		contentPane = new JPanel();

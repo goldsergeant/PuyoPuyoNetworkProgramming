@@ -35,7 +35,7 @@ public class MainGameView extends JFrame {
 	 */
 	public MainGameView() {
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 활성화 시키면 게임 창 닫을 시 서버에서 로그아웃
 		setBounds(100, 100, 640, 510);
 		setVisible(true);
 		setTitle("PuyoPuyo2!");
@@ -44,8 +44,8 @@ public class MainGameView extends JFrame {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		
-		try { // 배경화면 가져오기, 리소스 수정 필요
-			 mainBackGround = ImageIO.read(new File("../PYPY/src/resource/mainBackGround.bmp"));
+		try { // 배경화면 가져오기, 안되면 path 확인
+			 mainBackGround = ImageIO.read(new File("./src/resource/mainBackGround.bmp"));
 		} catch(IOException e) {
 			JOptionPane.showMessageDialog(null,  "이미지 불러오기 실패");
 			System.exit(0);
