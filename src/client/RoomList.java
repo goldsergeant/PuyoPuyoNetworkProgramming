@@ -1,56 +1,31 @@
 package client;
-// JavaChatClientView.java
-// 실질적인 채팅 창
-import java.awt.BorderLayout;
+
 import gameMsg.*;
-import java.awt.Color;
-import java.awt.EventQueue;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import java.awt.Font;
 
 public class RoomList extends JFrame {
+	
+	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private String UserName;
 	private JButton btnSend;
-	private static final  int BUF_LEN = 128; //  Windows 처럼 BUF_LEN 을 정의
 	private Socket socket; // 연결소켓
-	private InputStream is;
-	private OutputStream os;
-	private DataInputStream dis;
-	private DataOutputStream dos;
 	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
-	//private JTextArea textArea;
 	private JTextPane textArea;
-	
-	
+	private JTextField txtInput;
 	// 임시로 만든 버튼, 게임화면객체
 	private JButton tempGameStartButton;
-	private MainGameChatView game;
+	private GameChatView game;
 	
 	/**
 	 * Create the frame.
@@ -69,23 +44,28 @@ public class RoomList extends JFrame {
 		
 		textArea = new JTextPane();
 		textArea.setEditable(true);
-		textArea.setFont(new Font("굴림체", Font.PLAIN, 14));
+		textArea.setFont(new Font("굴림", Font.PLAIN, 14));
 		scrollPane.setViewportView(textArea);
+		
+		txtInput = new JTextField();
+		txtInput.setBounds(20, 423, 200, 40);
+		contentPane.add(txtInput);
+		txtInput.setColumns(10);
 
 		btnSend = new JButton("Send");
-		btnSend.setBounds(143, 423, 76, 40);
+		btnSend.setBounds(240, 423, 60, 40);
 		contentPane.add(btnSend);
 		
 		JLabel lblNewLabel = new JLabel("게임방");
 		lblNewLabel.setBounds(76, 21, 91, 31);
 		contentPane.add(lblNewLabel);
-		lblNewLabel.setFont(new Font("휴먼둥근헤드라인",Font.PLAIN,14));
+		lblNewLabel.setFont(new Font("굴림",Font.PLAIN,14));
 		lblNewLabel.setForeground(Color.red);
 		
 		JLabel lblNewLabel_1 = new JLabel("방장");
 		lblNewLabel_1.setBounds(231, 21, 76, 31);
 		contentPane.add(lblNewLabel_1);
-		lblNewLabel_1.setFont(new Font("휴먼둥근헤드라인",Font.PLAIN,14));
+		lblNewLabel_1.setFont(new Font("굴림",Font.PLAIN,14));
 		lblNewLabel_1.setForeground(Color.red);
 		ImageIcon image1=new ImageIcon("src/red.jpg");
 		JLabel lblNewLabel_2 = new JLabel();
@@ -102,11 +82,11 @@ public class RoomList extends JFrame {
 			
 			public void actionPerformed(ActionEvent e) {
 				
-				game = new MainGameChatView("yujin", "127.0.0.1", "30000");
+				game = new GameChatView("yujin", "127.0.0.1", "30000");
 			}
 		});
 		
-		tempGameStartButton.setBounds(250, 420, 80, 40);
+		tempGameStartButton.setBounds(300, 423, 60, 40);
 		contentPane.add(tempGameStartButton);
 		
 		
@@ -119,48 +99,28 @@ public class RoomList extends JFrame {
 		
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
-//			is = socket.getInputStream();
-//			dis = new DataInputStream(is);
-//			os = socket.getOutputStream();
-//			dos = new DataOutputStream(os);
 			oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.flush();
 			ois = new ObjectInputStream(socket.getInputStream());
 			
-			SendMessage("/login " + UserName);
 			ListenNetwork net = new ListenNetwork();
 			net.start();
-			Myaction action=new Myaction();
+			TextSendAction action = new TextSendAction();
 			btnSend.addActionListener(action);
+			txtInput.addActionListener(action);
+			txtInput.requestFocus();
 		} catch (NumberFormatException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			AppendText("connect error");
 		}
 
 	}
+	
 	// Server Message를 수신해서 화면에 표시
 	class ListenNetwork extends Thread {
 		public void run() {
 			while (true) {
 				try {
-					// String msg = dis.readUTF();
-//					byte[] b = new byte[BUF_LEN];
-//					int ret;
-//					ret = dis.read(b);
-//					if (ret < 0) {
-//						AppendText("dis.read() < 0 error");
-//						try {
-//							dos.close();
-//							dis.close();
-//							socket.close();
-//							break;
-//						} catch (Exception ee) {
-//							break;
-//						}// catch문 끝
-//					}
-//					String	msg = new String(b, "euc-kr");
-//					msg = msg.trim(); // 앞뒤 blank NULL, \n 모두 제거
 					Object obcm=null;
 					String msg=null;
 					GameMsg cm;
@@ -178,18 +138,10 @@ public class RoomList extends JFrame {
 						msg = String.format("[%s] %s", cm.userName, cm.data);
 					} else
 						continue;
-					switch (cm.code) {
-					case "200": // chat message
-						AppendText(msg);
-						break;
-					case "300": // Image 첨부
-						break;
-					}
+					AppendText(msg);
 				} catch (IOException e) {
 					AppendText("ois.readObject() error");
 					try {
-//						dos.close();
-//						dis.close();
 						ois.close();
 						oos.close();
 						socket.close();
@@ -204,11 +156,22 @@ public class RoomList extends JFrame {
 			}
 		}
 	}
-	public void AppendIcon(ImageIcon icon) {
-		int len = textArea.getDocument().getLength();
-		textArea.setCaretPosition(len); // place caret at the end (with no selection)
-		textArea.insertIcon(icon);	
-	}
+	
+	// keyboard enter key 치면 서버로 전송
+		class TextSendAction implements ActionListener {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Send button을 누르거나 메시지 입력하고 Enter key 치면
+				if (e.getSource() == btnSend || e.getSource() == txtInput) {
+					String msg = null;
+					msg = txtInput.getText();
+					SendMessage(msg);
+					txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
+					txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
+				}
+			}
+		}
+
 	// 화면에 출력
 	public void AppendText(String msg) {
 		//textArea.append(msg + "\n");
@@ -217,56 +180,40 @@ public class RoomList extends JFrame {
  		textArea.replaceSelection(msg + "\n"); // there is no selection, so inserts at caret
  	}
 
-	// Windows 처럼 message 제외한 나머지 부분은 NULL 로 만들기 위한 함수
-	public byte[] MakePacket(String msg) {
-		byte[] packet = new byte[BUF_LEN];
-		byte[] bb = null;
-		int i;
-		for (i = 0; i < BUF_LEN; i++)
-			packet[i] = 0;
-		try {
-			bb = msg.getBytes("euc-kr");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(0);
-		}
-		for (i = 0; i < bb.length; i++)
-			packet[i] = bb[i];
-		return packet;
-	}
-
 	// Server에게 network으로 전송
 	public void SendMessage(String msg) {
 		try {
-			// dos.writeUTF(msg);
-//			byte[] bb;
-//			bb = MakePacket(msg);
-//			dos.write(bb, 0, bb.length);
 			GameMsg obcm=new GameMsg(UserName, "200", msg);
 			oos.writeObject(obcm);
 		} catch (IOException e) {
 			AppendText("dos.write() error");
 			try {
-//				dos.close();
-//				dis.close();
 				ois.close();
 				oos.close();
 				socket.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 				System.exit(0);
 			}
 		}
 	}
-}
-class Myaction implements ActionListener{
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 	
+	public void SendChatMsg(GameMsg obj) {
+		try {
+			oos.writeObject(obj.code);
+			oos.writeObject(obj.userName);
+			oos.writeObject(obj.data);
+			oos.flush();
+		} catch (IOException e) {
+			AppendText("SendGameMsg Error");
+			e.printStackTrace();
+			try {
+				oos.close();
+				socket.close();
+				ois.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
 }
