@@ -52,12 +52,11 @@ public class MainGameView extends JFrame {
 		}
 
 		setContentPane(contentPane);
-		contentPane.paint(getGraphics());
+		//contentPane.paint(getGraphics());
 		
 	}
 	
 	public void paint(Graphics g) {
-		
 		g.drawImage(mainBackGround, 0, 0, null);
 	}
 

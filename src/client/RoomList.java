@@ -10,6 +10,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -17,7 +19,7 @@ import java.net.Socket;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -38,6 +40,9 @@ public class RoomList extends JFrame {
 	private OutputStream os;
 	private DataInputStream dis;
 	private DataOutputStream dos;
+	
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
 	//private JTextArea textArea;
 	private JTextPane textArea;
 	
@@ -113,10 +118,13 @@ public class RoomList extends JFrame {
 		
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
-			is = socket.getInputStream();
-			dis = new DataInputStream(is);
-			os = socket.getOutputStream();
-			dos = new DataOutputStream(os);
+//			is = socket.getInputStream();
+//			dis = new DataInputStream(is);
+//			os = socket.getOutputStream();
+//			dos = new DataOutputStream(os);
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			oos.flush();
+			ois = new ObjectInputStream(socket.getInputStream());
 			
 			SendMessage("/login " + UserName);
 			ListenNetwork net = new ListenNetwork();
@@ -204,14 +212,18 @@ public class RoomList extends JFrame {
 	public void SendMessage(String msg) {
 		try {
 			// dos.writeUTF(msg);
-			byte[] bb;
-			bb = MakePacket(msg);
-			dos.write(bb, 0, bb.length);
+//			byte[] bb;
+//			bb = MakePacket(msg);
+//			dos.write(bb, 0, bb.length);
+			GameMsg obcm=new GameMsg(UserName, "200", msg);
+			oos.writeObject(obcm);
 		} catch (IOException e) {
 			AppendText("dos.write() error");
 			try {
-				dos.close();
-				dis.close();
+//				dos.close();
+//				dis.close();
+				ois.close();
+				oos.close();
 				socket.close();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block

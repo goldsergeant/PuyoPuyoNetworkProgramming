@@ -161,15 +161,7 @@ public class MainGameChatView extends JFrame {
 
 			try {
 				obj = ois.readObject();
-				cm.code = (String) obj;
-				obj = ois.readObject();
-				cm.userName = (String) obj;
-				obj = ois.readObject();
-				cm.data = (String) obj;
-				if (cm.code.equals("300")) {
-					obj = ois.readObject();
-					//cm.imgbytes = (byte[]) obj;
-				}
+				cm = (GameMsg) obj;
 			} catch (ClassNotFoundException | IOException e) {
 				// TODO Auto-generated catch block
 				AppendText("ReadGameMsg Error");
@@ -342,12 +334,7 @@ public class MainGameChatView extends JFrame {
 	// Android와 호환성을 위해 code, userName, data 모드 각각 전송한다.
 	public void SendGameMsg(GameMsg obj) {
 		try {
-			oos.writeObject(obj.code);
-			oos.writeObject(obj.userName);
-			oos.writeObject(obj.data);
-			if (obj.code.equals("300")) { // 이미지 첨부 있는 경우
-				// oos.writeObject(obj.imgbytes);
-			}
+			oos.writeObject(obj);
 			oos.flush();
 		} catch (IOException e) {
 			AppendText("SendGameMsg Error");

@@ -250,9 +250,7 @@ public class MainGameServer extends JFrame {
 		//
 		public void WriteGameMsg(GameMsg obj) {
 			try {
-			    oos.writeObject(obj.code);
-			    oos.writeObject(obj.userName);
-			    oos.writeObject(obj.data);
+			    oos.writeObject(obj);
 			    if (obj.code.equals("300")) {
 				    //oos.writeObject(obj.imgbytes);
 				    //oos.writeObject(obj.bimg);
@@ -283,13 +281,8 @@ public class MainGameServer extends JFrame {
 			// Android와 호환성을 위해 각각의 Field를 따로따로 읽는다.
 			try {
 				obj = ois.readObject();
-				cm.code = (String) obj;
-				obj = ois.readObject();
-				cm.userName = (String) obj;
-				obj = ois.readObject();
-				cm.data = (String) obj;
+				cm= (GameMsg)obj;
 				if (cm.code.equals("300")) {
-					obj = ois.readObject();
 					// cm.imgbytes = (byte[]) obj;
 //					obj = ois.readObject();
 //					cm.bimg = (BufferedImage) obj;
