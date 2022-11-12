@@ -1,5 +1,4 @@
 package client;
-// Java Client Ω√¿€import java.awt.BorderLayout;
 
 import java.awt.EventQueue;
 
@@ -15,6 +14,10 @@ import java.awt.event.ActionEvent;
 
 public class MainGameClientStart extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField txtUserName;
 	private JTextField txtIpAddress;
@@ -24,7 +27,7 @@ public class MainGameClientStart extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		/*EventQueue.invokeLater(new Runnable() {
+		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					MainGameClientStart frame = new MainGameClientStart();
@@ -33,8 +36,7 @@ public class MainGameClientStart extends JFrame {
 					e.printStackTrace();
 				}
 			}
-		});*/
-		new RoomList("user1", "127.0.0.1", "30000");
+		});
 	}
 
 	/**
@@ -96,8 +98,10 @@ public class MainGameClientStart extends JFrame {
 			String username = txtUserName.getText().trim();
 			String ip_addr = txtIpAddress.getText().trim();
 			String port_no = txtPortNumber.getText().trim();
-			MainGameChatView view = new MainGameChatView(username, ip_addr, port_no);
+			RoomList roomList = new RoomList(username, ip_addr, port_no);
 			setVisible(false);
 		}
 	}
 }
+
+
