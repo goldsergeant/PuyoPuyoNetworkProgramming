@@ -96,7 +96,7 @@ public class MainGameClientStart extends JFrame {
 			String username = txtUserName.getText().trim();
 			String ip_addr = txtIpAddress.getText().trim();
 			String port_no = txtPortNumber.getText().trim();
-			MainGameClientView view = new MainGameClientView(username, ip_addr, port_no);
+			MainGameChatView view = new MainGameChatView(username, ip_addr, port_no);
 			setVisible(false);
 		}
 	}

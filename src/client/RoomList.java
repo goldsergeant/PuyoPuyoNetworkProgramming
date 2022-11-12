@@ -41,6 +41,11 @@ public class RoomList extends JFrame {
 	//private JTextArea textArea;
 	private JTextPane textArea;
 	
+	
+	// 임시로 만든 버튼, 게임화면객체
+	private JButton tempGameStartButton;
+	private MainGameChatView game;
+	
 	/**
 	 * Create the frame.
 	 */
@@ -81,6 +86,25 @@ public class RoomList extends JFrame {
 		lblNewLabel_2.setIcon(image1);
 		lblNewLabel_2.setBounds(12, 21, 56, 31);
 		contentPane.add(lblNewLabel_2);
+		
+		/**
+		 * 임시로 만든 게임 화면 입장 버튼
+		 */
+		
+		tempGameStartButton = new JButton("임시입장");
+		tempGameStartButton.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				
+				game = new MainGameChatView("yujin", "127.0.0.1", "30000");
+			}
+		});
+		
+		tempGameStartButton.setBounds(250, 420, 80, 40);
+		contentPane.add(tempGameStartButton);
+		
+		
+		
 		
 		setVisible(true);
 	
