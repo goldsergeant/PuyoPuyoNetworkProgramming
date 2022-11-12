@@ -1,8 +1,6 @@
 package client;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-import java.awt.FileDialog;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -18,65 +16,37 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Image;
-import java.awt.Color;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.JToggleButton;
-import javax.swing.JList;
-import gameMsg.GameMsg;
+import gameMsg.*;
 
-public class MainGameChatView extends JFrame {
-	/**
-	 * 
-	 */
+public class GameChatView extends JFrame {
+
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField txtInput;
 	private String UserName;
 	private JButton btnSend;
-	private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
 	private Socket socket; // 연결소켓
-	//private InputStream is;
-	//private OutputStream os;
-	//private DataInputStream dis;
-//	private DataOutputStream dos;
 
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 
 	private JLabel lbluserName;
-	// private JTextArea textArea;
 	private JTextPane textArea;
 
-	private Frame frame;
-	private FileDialog fd;
-	private JButton imgBtn;
-	
 	// 임시로 연결
-	private MainGameView game;
+	private GameScreenView game;
 
 	/**
 	 * Create the frame.
 	 */
-	public MainGameChatView(String userName, String ip_addr, String port_no) {
+	public GameChatView(String userName, String ip_addr, String port_no) {
 		
-		game = new MainGameView();
+		game = new GameScreenView();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 394, 630);
@@ -91,7 +61,7 @@ public class MainGameChatView extends JFrame {
 
 		textArea = new JTextPane();
 		textArea.setEditable(true);
-		textArea.setFont(new Font("굴림체", Font.PLAIN, 14));
+		textArea.setFont(new Font("굴림", Font.PLAIN, 14));
 		scrollPane.setViewportView(textArea);
 
 		txtInput = new JTextField();
@@ -156,7 +126,6 @@ public class MainGameChatView extends JFrame {
 
 	public GameMsg ReadGameMsg() {
 		Object obj = null;
-		String msg = null;
 		GameMsg cm = new GameMsg("", "", "");
 		// Android와 호환성을 위해 각각의 Field를 따로따로 읽는다.
 
@@ -189,8 +158,6 @@ public class MainGameChatView extends JFrame {
 					return null;
 				}
 
-				// textArea.append("메세지 송신 에러!!\n");
-				// System.exit(0);
 			}
 
 
@@ -207,18 +174,7 @@ public class MainGameChatView extends JFrame {
 					break;
 				String msg;
 				msg = String.format("[%s] %s", cm.userName, cm.data);
-				switch (cm.code) {
-				case "200": // chat message
-					AppendText(msg);
-					break;
-				case "300": // Image 첨부
-					AppendText("[" + cm.userName + "]" + " " + cm.data);
-					//AppendImage(cm.img);
-					//AppendImageBytes(cm.imgbytes);
-
-					break;
-				}
-
+				AppendText(msg);
 			}
 		}
 	}
@@ -261,69 +217,6 @@ public class MainGameChatView extends JFrame {
 		textArea.replaceSelection(msg + "\n");
 	}
 
-	public void AppendImage(ImageIcon ori_icon) {
-		int len = textArea.getDocument().getLength();
-		textArea.setCaretPosition(len); // place caret at the end (with no selection)
-		Image ori_img = ori_icon.getImage();
-		int width, height;
-		double ratio;
-		width = ori_icon.getIconWidth();
-		height = ori_icon.getIconHeight();
-		// Image가 너무 크면 최대 가로 또는 세로 200 기준으로 축소시킨다.
-		if (width > 200 || height > 200) {
-			if (width > height) { // 가로 사진
-				ratio = (double) height / width;
-				width = 200;
-				height = (int) (width * ratio);
-			} else { // 세로 사진
-				ratio = (double) width / height;
-				height = 200;
-				width = (int) (height * ratio);
-			}
-			Image new_img = ori_img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-			ImageIcon new_icon = new ImageIcon(new_img);
-			textArea.insertIcon(new_icon);
-
-		} else
-			textArea.insertIcon(ori_icon);
-		len = textArea.getDocument().getLength();
-		textArea.setCaretPosition(len);
-		textArea.replaceSelection("\n");
-	}
-
-	public void AppendImageBytes(byte[] imgbytes) {
-		ByteArrayInputStream bis = new ByteArrayInputStream(imgbytes);
-		BufferedImage ori_img = null;
-		try {
-			ori_img = ImageIO.read(bis);
-			bis.close();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		ImageIcon new_icon = new ImageIcon(ori_img);
-		AppendImage(new_icon);
-	}
-
-	// Windows 처럼 message 제외한 나머지 부분은 NULL 로 만들기 위한 함수
-	public byte[] MakePacket(String msg) {
-		byte[] packet = new byte[BUF_LEN];
-		byte[] bb = null;
-		int i;
-		for (i = 0; i < BUF_LEN; i++)
-			packet[i] = 0;
-		try {
-			bb = msg.getBytes("euc-kr");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(0);
-		}
-		for (i = 0; i < bb.length; i++)
-			packet[i] = bb[i];
-		return packet;
-	}
 
 	// Server에게 network으로 전송
 	public void SendMessage(String msg) {

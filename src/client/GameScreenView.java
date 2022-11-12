@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-public class MainGameView extends JFrame {
+public class GameScreenView extends JFrame {
 
 	private JPanel contentPane;
 	private Image mainBackGround;
@@ -22,7 +22,7 @@ public class MainGameView extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					new MainGameView();
+					new GameScreenView();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -33,7 +33,7 @@ public class MainGameView extends JFrame {
 	/**
 	 * Create the main frame.
 	 */
-	public MainGameView() {
+	public GameScreenView() {
 		
 		// setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 활성화 시키면 게임 창 닫을 시 서버에서 로그아웃
 		setBounds(100, 100, 640, 510);
@@ -52,7 +52,7 @@ public class MainGameView extends JFrame {
 		}
 
 		setContentPane(contentPane);
-		//contentPane.paint(getGraphics());
+		contentPane.paint(getGraphics());
 		
 	}
 	
