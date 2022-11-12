@@ -1,6 +1,7 @@
 package server;
 
 import java.awt.EventQueue;
+import gameMsg.*;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -277,11 +278,11 @@ public class MainGameServer extends JFrame {
 		public GameMsg ReadGameMsg() {
 			Object obj = null;
 			String msg = null;
-			GameMsg cm = new GameMsg("", "", "");
+			GameMsg cm = null;
 			// Android와 호환성을 위해 각각의 Field를 따로따로 읽는다.
 			try {
 				obj = ois.readObject();
-				cm= (GameMsg)obj;
+				cm=(GameMsg) obj;
 				if (cm.code.equals("300")) {
 					// cm.imgbytes = (byte[]) obj;
 //					obj = ois.readObject();
@@ -353,7 +354,10 @@ public class MainGameServer extends JFrame {
 								break;
 							}
 						}
-					} else { // 일반 채팅 메시지
+					}else if (args[1].matches("/login")) {
+						//아무것도 안보내기
+					} 
+					else { // 일반 채팅 메시지
 						UserStatus = "O";
 						//WriteAll(msg + "\n"); // Write All
 						WriteAllObject(cm);

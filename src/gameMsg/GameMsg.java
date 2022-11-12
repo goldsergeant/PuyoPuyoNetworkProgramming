@@ -1,4 +1,5 @@
-package server;
+package gameMsg;
+
 
 import java.io.Serializable;
 

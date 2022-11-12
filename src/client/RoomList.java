@@ -2,6 +2,7 @@ package client;
 // JavaChatClientView.java
 // 실질적인 채팅 창
 import java.awt.BorderLayout;
+import gameMsg.*;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -144,34 +145,61 @@ public class RoomList extends JFrame {
 			while (true) {
 				try {
 					// String msg = dis.readUTF();
-					byte[] b = new byte[BUF_LEN];
-					int ret;
-					ret = dis.read(b);
-					if (ret < 0) {
-						AppendText("dis.read() < 0 error");
-						try {
-							dos.close();
-							dis.close();
-							socket.close();
-							break;
-						} catch (Exception ee) {
-							break;
-						}// catch문 끝
-					}
-					String	msg = new String(b, "euc-kr");
-					msg = msg.trim(); // 앞뒤 blank NULL, \n 모두 제거
-					AppendText(msg); // server 화면에 출력
-				} catch (IOException e) {
-					AppendText("dis.read() error");
+//					byte[] b = new byte[BUF_LEN];
+//					int ret;
+//					ret = dis.read(b);
+//					if (ret < 0) {
+//						AppendText("dis.read() < 0 error");
+//						try {
+//							dos.close();
+//							dis.close();
+//							socket.close();
+//							break;
+//						} catch (Exception ee) {
+//							break;
+//						}// catch문 끝
+//					}
+//					String	msg = new String(b, "euc-kr");
+//					msg = msg.trim(); // 앞뒤 blank NULL, \n 모두 제거
+					Object obcm=null;
+					String msg=null;
+					GameMsg cm;
 					try {
-						dos.close();
-						dis.close();
+						obcm = ois.readObject();
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						break;
+					}
+					if (obcm == null)
+						break;
+					if (obcm instanceof GameMsg) {
+						cm = (GameMsg) obcm;
+						msg = String.format("[%s] %s", cm.userName, cm.data);
+					} else
+						continue;
+					switch (cm.code) {
+					case "200": // chat message
+						AppendText(msg);
+						break;
+					case "300": // Image 첨부
+						break;
+					}
+				} catch (IOException e) {
+					AppendText("ois.readObject() error");
+					try {
+//						dos.close();
+//						dis.close();
+						ois.close();
+						oos.close();
 						socket.close();
+
 						break;
 					} catch (Exception ee) {
 						break;
 					} // catch문 끝
 				} // 바깥 catch문끝
+
 				
 			}
 		}

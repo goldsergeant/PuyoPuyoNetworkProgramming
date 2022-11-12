@@ -39,6 +39,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.JToggleButton;
 import javax.swing.JList;
+import gameMsg.GameMsg;
 
 public class MainGameChatView extends JFrame {
 	/**
