@@ -22,8 +22,9 @@ public class MainGameServer extends JFrame {
 	private JTextField txtPortNumber;
 	private ServerSocket socket; // 서버소켓
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
-	private Vector userVec = new Vector(); // 연결된 사용자를 저장할 벡터
-
+	private Vector<UserService> userVec = new Vector<UserService>(); // 연결된 사용자를 저장할 벡터
+	private Vector<String> userList = new Vector<String>(); // 회원가입자 목록
+	
 	/**
 	 * Launch the application.
 	 */
@@ -45,12 +46,21 @@ public class MainGameServer extends JFrame {
 	 */
 	public MainGameServer() {
 		
+		/**
+		 * 유저 목록은 DB를 사용하지 않고 서버에서 리스트로 관리
+		 */
+		userList.add("yujin");
+		userList.add("leeso");
+		userList.add("hansung");
+		userList.add("bugi");
+		// 위에 등록된 회원만 접속 가능
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 338, 440);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		setContentPane(contentPane);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(12, 10, 300, 298);
@@ -93,12 +103,12 @@ public class MainGameServer extends JFrame {
 
 	// 새로운 참가자 accept() 하고 user thread를 새로 생성한다.
 	class AcceptServer extends Thread {
-		@SuppressWarnings("unchecked")
 		public void run() {
 			while (true) { // 사용자 접속을 계속해서 받기 위해 while문
 				try {
 					AppendText("Waiting new clients ...");
 					client_socket = socket.accept(); // accept가 일어나기 전까지는 무한 대기중
+					
 					AppendText("새로운 참가자 from " + client_socket);
 					// User 당 하나씩 Thread 생성
 					UserService new_user = new UserService(client_socket);
@@ -132,7 +142,7 @@ public class MainGameServer extends JFrame {
 		private ObjectInputStream ois;
 		private ObjectOutputStream oos;
 		private Socket client_socket;
-		private Vector user_vc;
+		private Vector<UserService> user_vc;
 		public String userName = "";
 
 		public UserService(Socket client_socket) {
@@ -152,14 +162,10 @@ public class MainGameServer extends JFrame {
 			AppendText("새로운 참가자 " + userName + " 입장.");
 			WriteOne("Welcome to Java chat server\n");
 			WriteOne(userName + "님 환영합니다.\n"); // 연결된 사용자에게 정상접속을 알림
-			String msg = "[" + userName + "]님이 입장 하였습니다.\n";
-			WriteOthers(msg); // 아직 user_vc에 새로 입장한 user는 포함되지 않았다.
 		}
 
 		public void Logout() {
-			String msg = "[" + userName + "]님이 퇴장 하였습니다.\n";
 			userVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
-			WriteAll(msg); // 나를 제외한 다른 User들에게 전송
 			this.client_socket = null;
 			AppendText("사용자 " + "[" + userName + "] 퇴장. 현재 참가자 수 " + userVec.size());
 		}
@@ -209,7 +215,6 @@ public class MainGameServer extends JFrame {
 					ois = null;
 					oos = null;				
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				Logout();
@@ -241,13 +246,16 @@ public class MainGameServer extends JFrame {
 				if (client_socket == null)
 					break;
 				cm = ReadGameMsg();
-				if (cm==null)
+				if (cm == null)
 					break;
-				if (cm.code.length()==0)
+				if (cm.code.length() == 0)
 					break;
 				AppendObject(cm);
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
+					if (userList.contains(userName)) {
+						// GameMsg sm = n
+					}
 					Login();
 				} else if (cm.code.matches("200")) {
 					String msg = String.format("[%s] %s", cm.userName, cm.data);

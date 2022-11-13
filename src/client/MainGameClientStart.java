@@ -13,6 +13,8 @@ public class MainGameClientStart extends JFrame {
 	private JTextField txtUserName;
 	private JTextField txtIpAddress;
 	private JTextField txtPortNumber;
+	private JLabel titleLabel;
+	private ImageIcon title;
 
 	/**
 	 * Launch the application.
@@ -34,53 +36,67 @@ public class MainGameClientStart extends JFrame {
 	 * Create the frame.
 	 */
 	public MainGameClientStart() {
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 254, 321);
+		setBounds(100, 100, 760, 960);
+		setTitle("PuyoPuyo2!!");
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		getContentPane().setBackground(new java.awt.Color(85, 85, 170));
 		
-		JLabel lblNewLabel = new JLabel("User Name");
-		lblNewLabel.setBounds(12, 39, 82, 33);
+		JButton btnStart = new JButton(new ImageIcon("./src/resource/startButton.png"));
+		btnStart.setBounds(524, 170, 200, 280);
+		btnStart.setBackground(getForeground());
+		btnStart.setBorderPainted(false);
+		btnStart.setFocusPainted(false);
+		btnStart.setContentAreaFilled(false);
+		contentPane.add(btnStart);
+		
+		JLabel lblNewLabel = new JLabel("아이디");
+		lblNewLabel.setBounds(606, 62, 82, 33);
 		contentPane.add(lblNewLabel);
 		
 		txtUserName = new JTextField();
 		txtUserName.setHorizontalAlignment(SwingConstants.CENTER);
-		txtUserName.setBounds(101, 39, 116, 33);
+		txtUserName.setBounds(565, 105, 116, 33);
 		contentPane.add(txtUserName);
 		txtUserName.setColumns(10);
 		
 		JLabel lblIpAddress = new JLabel("IP Address");
-		lblIpAddress.setBounds(12, 100, 82, 33);
+		lblIpAddress.setBounds(590, 562, 82, 33);
 		contentPane.add(lblIpAddress);
 		
 		txtIpAddress = new JTextField();
 		txtIpAddress.setHorizontalAlignment(SwingConstants.CENTER);
 		txtIpAddress.setText("127.0.0.1");
 		txtIpAddress.setColumns(10);
-		txtIpAddress.setBounds(101, 100, 116, 33);
+		txtIpAddress.setBounds(565, 605, 116, 33);
 		contentPane.add(txtIpAddress);
 		
 		JLabel lblPortNumber = new JLabel("Port Number");
-		lblPortNumber.setBounds(12, 163, 82, 33);
+		lblPortNumber.setBounds(590, 683, 82, 33);
 		contentPane.add(lblPortNumber);
 		
 		txtPortNumber = new JTextField();
 		txtPortNumber.setText("30000");
 		txtPortNumber.setHorizontalAlignment(SwingConstants.CENTER);
 		txtPortNumber.setColumns(10);
-		txtPortNumber.setBounds(101, 163, 116, 33);
+		txtPortNumber.setBounds(565, 735, 116, 33);
 		contentPane.add(txtPortNumber);
 		
-		JButton btnConnect = new JButton("Connect");
-		btnConnect.setBounds(12, 223, 205, 38);
-		contentPane.add(btnConnect);
+		title = new ImageIcon("./src/resource/title.png");
+		titleLabel = new JLabel("Title", title, JLabel.CENTER);
+		titleLabel.setBounds(12, 10, 500, 902);
+		contentPane.add(titleLabel);
+
 		Myaction action = new Myaction();
-		btnConnect.addActionListener(action);
 		txtUserName.addActionListener(action);
 		txtIpAddress.addActionListener(action);
 		txtPortNumber.addActionListener(action);
+		btnStart.addActionListener(action);
+		
 	}
 	class Myaction implements ActionListener // 내부클래스로 액션 이벤트 처리 클래스
 	{

@@ -23,6 +23,7 @@ public class RoomList extends JFrame {
 	private ObjectOutputStream oos;
 	private JTextPane textArea;
 	private JTextField txtInput;
+	
 	// 임시로 만든 버튼, 게임화면객체
 	private JButton tempGameStartButton;
 	private GameChatView game;
