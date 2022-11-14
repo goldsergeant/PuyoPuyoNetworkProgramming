@@ -26,7 +26,7 @@ public class RoomList extends JFrame {
 	
 	// 임시로 만든 버튼, 게임화면객체
 	private JButton tempGameStartButton;
-	private GameChatView game;
+	private GameView game;
 	
 	/**
 	 * Create the frame.
@@ -83,7 +83,7 @@ public class RoomList extends JFrame {
 			
 			public void actionPerformed(ActionEvent e) {
 				
-				game = new GameChatView(username, "127.0.0.1", "30000");
+				game = new GameView(username, "127.0.0.1", "30000");
 			}
 		});
 		

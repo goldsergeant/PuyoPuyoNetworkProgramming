@@ -27,7 +27,7 @@ import javax.swing.text.StyledDocument;
 
 import gameMsg.*;
 
-public class GameChatView extends JFrame {
+public class GameView extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -44,23 +44,23 @@ public class GameChatView extends JFrame {
 
 	// ¿”Ω√∑Œ ø¨∞·
 	private GameScreenView game;
-
+	private BufferedImage mainBackGround;
 	/**
 	 * Create the frame.
 	 */
-	public GameChatView(String userName, String ip_addr, String port_no) {
-		
+	public GameView(String userName, String ip_addr, String port_no) {
+		super("Puyo Puyo2!!");
 		game = new GameScreenView();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 394, 630);
+		setBounds(100, 100, 651, 689);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(12, 10, 352, 471);
+		scrollPane.setBounds(209, 495, 231, 93);
 		contentPane.add(scrollPane);
 
 		textArea = new JTextPane();
@@ -70,13 +70,13 @@ public class GameChatView extends JFrame {
 		scrollPane.setViewportView(textArea);
 
 		txtInput = new JTextField();
-		txtInput.setBounds(74, 489, 209, 40);
+		txtInput.setBounds(209, 599, 209, 40);
 		contentPane.add(txtInput);
 		txtInput.setColumns(10);
-
+		
 		btnSend = new JButton("Send");
 		btnSend.setFont(new Font("±º∏≤", Font.PLAIN, 14));
-		btnSend.setBounds(295, 489, 69, 40);
+		btnSend.setBounds(462, 598, 69, 40);
 		contentPane.add(btnSend);
 
 		lbluserName = new JLabel("Name");
@@ -84,7 +84,7 @@ public class GameChatView extends JFrame {
 		lbluserName.setBackground(Color.WHITE);
 		lbluserName.setFont(new Font("±º∏≤", Font.BOLD, 14));
 		lbluserName.setHorizontalAlignment(SwingConstants.CENTER);
-		lbluserName.setBounds(12, 539, 62, 40);
+		lbluserName.setBounds(12, 598, 62, 40);
 		contentPane.add(lbluserName);
 		setVisible(true);
 
@@ -101,8 +101,14 @@ public class GameChatView extends JFrame {
 				System.exit(0);
 			}
 		});
-		btnNewButton.setBounds(295, 539, 69, 40);
+		btnNewButton.setBounds(564, 598, 69, 40);
 		contentPane.add(btnNewButton);
+		
+		JPanel gamePane = new GamePane(new ImageIcon("src/resource/mainBackGround.bmp").getImage());
+		gamePane.setBounds(0, 0, 633, 485);
+		contentPane.add(gamePane);
+	
+		
 
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
@@ -273,4 +279,19 @@ public class GameChatView extends JFrame {
 			// System.exit(0);
 		}
 	}
+}
+
+class GamePane extends JPanel{
+	private Image img;
+	  
+	  public GamePane(Image img) {
+	      this.img = img;
+	      setSize(new Dimension(img.getWidth(null), img.getHeight(null)));
+	      setPreferredSize(new Dimension(img.getWidth(null), img.getHeight(null)));
+	      setLayout(null);
+	  }
+	  
+	  public void paintComponent(Graphics g) {
+	      g.drawImage(img, 3, 0, null);
+	  }
 }
