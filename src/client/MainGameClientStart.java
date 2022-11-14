@@ -2,8 +2,14 @@ package client;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.ActionEvent;
 
 public class MainGameClientStart extends JFrame {
@@ -45,13 +51,14 @@ public class MainGameClientStart extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		getContentPane().setBackground(new java.awt.Color(85, 85, 170));
-		
-		JButton btnStart = new JButton(new ImageIcon("./src/resource/startButton.png"));
+		ImageIcon startIcon=new ImageIcon("./src/resource/startButton.png");
+		JButton btnStart = new JButton(startIcon);
 		btnStart.setBounds(524, 170, 200, 280);
 		btnStart.setBackground(getForeground());
 		btnStart.setBorderPainted(false);
 		btnStart.setFocusPainted(false);
 		btnStart.setContentAreaFilled(false);
+	
 		contentPane.add(btnStart);
 		
 		JLabel lblNewLabel = new JLabel("아이디");
@@ -96,7 +103,7 @@ public class MainGameClientStart extends JFrame {
 		txtIpAddress.addActionListener(action);
 		txtPortNumber.addActionListener(action);
 		btnStart.addActionListener(action);
-		
+		btnStart.addMouseListener(new ButtonAction());
 	}
 	class Myaction implements ActionListener // 내부클래스로 액션 이벤트 처리 클래스
 	{
@@ -108,6 +115,41 @@ public class MainGameClientStart extends JFrame {
 			new RoomList(username, ip_addr, port_no);
 			setVisible(false);
 		}
+	}
+	
+	class ButtonAction implements MouseListener{
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			JButton button=(JButton) e.getSource();
+			button.setSize(button.getWidth()+10, button.getHeight()+10);
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			JButton button=(JButton) e.getSource();
+			button.setSize(button.getWidth()-10, button.getHeight()-10);
+		}
+		
 	}
 }
 

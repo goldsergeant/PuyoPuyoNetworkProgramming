@@ -83,7 +83,7 @@ public class RoomList extends JFrame {
 			
 			public void actionPerformed(ActionEvent e) {
 				
-				game = new GameChatView("yujin", "127.0.0.1", "30000");
+				game = new GameChatView(username, "127.0.0.1", "30000");
 			}
 		});
 		

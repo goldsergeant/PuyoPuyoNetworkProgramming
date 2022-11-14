@@ -21,6 +21,10 @@ import javax.swing.border.EmptyBorder;
 import javax.imageio.ImageIO;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
 import gameMsg.*;
 
 public class GameChatView extends JFrame {
@@ -62,6 +66,7 @@ public class GameChatView extends JFrame {
 		textArea = new JTextPane();
 		textArea.setEditable(true);
 		textArea.setFont(new Font("굴림", Font.PLAIN, 14));
+		textArea.setFocusable(false);
 		scrollPane.setViewportView(textArea);
 
 		txtInput = new JTextField();
@@ -126,8 +131,7 @@ public class GameChatView extends JFrame {
 
 	public GameMsg ReadGameMsg() {
 		Object obj = null;
-		GameMsg cm = new GameMsg("", "", "");
-		// Android와 호환성을 위해 각각의 Field를 따로따로 읽는다.
+		GameMsg cm = null;
 
 			try {
 				obj = ois.readObject();
@@ -173,8 +177,13 @@ public class GameChatView extends JFrame {
 				if (socket == null)
 					break;
 				String msg;
+				if(cm.userName.equals(UserName)) {
+					msg = String.format("%s", cm.data);
+					myAppendText(msg);
+				}else {
 				msg = String.format("[%s] %s", cm.userName, cm.data);
 				AppendText(msg);
+			}
 			}
 		}
 	}
@@ -215,6 +224,24 @@ public class GameChatView extends JFrame {
 		// 끝으로 이동
 		textArea.setCaretPosition(len);
 		textArea.replaceSelection(msg + "\n");
+	}
+	
+	public void myAppendText(String msg) {
+		msg = msg.trim(); // 앞뒤 blank와 \n을 제거한다.
+		int len = textArea.getDocument().getLength();
+		// 끝으로 이동
+		textArea.setCaretPosition(len);
+		textArea.replaceSelection(msg + "\n");
+		StyledDocument doc = textArea.getStyledDocument();
+		SimpleAttributeSet right = new SimpleAttributeSet();
+		StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);
+		doc.setParagraphAttributes(len, doc.getLength(), right, false);
+		len=textArea.getDocument().getLength();
+		textArea.setCaretPosition(len);
+		doc = textArea.getStyledDocument();
+		right = new SimpleAttributeSet();
+		StyleConstants.setAlignment(right, StyleConstants.ALIGN_LEFT);
+		doc.setParagraphAttributes(len, doc.getLength(), right, false);
 	}
 
 
