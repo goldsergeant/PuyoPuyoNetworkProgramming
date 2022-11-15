@@ -24,10 +24,8 @@ public class GameView extends JFrame {
 	private String UserName;
 	private JButton btnSend;
 	private Socket socket; // 연결소켓
-
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
-
 	private JLabel lbluserName;
 	private JTextPane textArea;
 
@@ -38,14 +36,14 @@ public class GameView extends JFrame {
 		super("Puyo Puyo2!!");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 651, 689);
+		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(209, 495, 231, 93);
+		scrollPane.setBounds(664, 19, 285, 381);
 		contentPane.add(scrollPane);
 
 		textArea = new JTextPane();
@@ -55,13 +53,13 @@ public class GameView extends JFrame {
 		scrollPane.setViewportView(textArea);
 
 		txtInput = new JTextField();
-		txtInput.setBounds(209, 599, 209, 40);
+		txtInput.setBounds(664, 410, 194, 40);
 		contentPane.add(txtInput);
 		txtInput.setColumns(10);
 		
 		btnSend = new JButton("Send");
 		btnSend.setFont(new Font("굴림", Font.PLAIN, 14));
-		btnSend.setBounds(462, 598, 69, 40);
+		btnSend.setBounds(880, 410, 69, 40);
 		contentPane.add(btnSend);
 
 		lbluserName = new JLabel("Name");
@@ -69,7 +67,7 @@ public class GameView extends JFrame {
 		lbluserName.setBackground(Color.WHITE);
 		lbluserName.setFont(new Font("굴림", Font.BOLD, 14));
 		lbluserName.setHorizontalAlignment(SwingConstants.CENTER);
-		lbluserName.setBounds(12, 598, 62, 40);
+		lbluserName.setBounds(664, 460, 62, 40);
 		contentPane.add(lbluserName);
 		setVisible(true);
 
@@ -81,20 +79,19 @@ public class GameView extends JFrame {
 		btnNewButton.setFont(new Font("굴림", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GameMsg msg = new GameMsg(UserName, "400", "Bye");
+				GameMsg msg = new GameMsg(UserName, "900", "Bye");
 				SendGameMsg(msg);
 				System.exit(0);
 			}
 		});
-		btnNewButton.setBounds(564, 598, 69, 40);
+		btnNewButton.setBounds(880, 459, 69, 40);
 		contentPane.add(btnNewButton);
 		
-		JPanel gamePane = new GamePane(new ImageIcon("src/resource/mainBackGround.bmp").getImage());
-		gamePane.setBounds(0, 0, 633, 485);
+		JPanel gamePane = new GamePane(new ImageIcon("src/resource/backGround.png").getImage());
+		gamePane.setBounds(10, 10, 640, 480);
 		contentPane.add(gamePane);
 	
 		
-
 		try {
 			socket = new Socket(ip_addr, Integer.parseInt(port_no));
 
@@ -113,7 +110,6 @@ public class GameView extends JFrame {
 			txtInput.requestFocus();
 
 		} catch (NumberFormatException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			AppendText("connect error");
 		}
@@ -138,14 +134,12 @@ public class GameView extends JFrame {
 					socket = null;
 					return null;
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 					try {
 						oos.close();
 						socket.close();
 						ois.close();
 					} catch (IOException e2) {
-						// TODO Auto-generated catch block
 						e2.printStackTrace();
 					}
 
@@ -256,12 +250,8 @@ public class GameView extends JFrame {
 				socket.close();
 				ois.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
-			// textArea.append("메세지 송신 에러!!\n");
-			// System.exit(0);
 		}
 	}
 }
@@ -277,6 +267,6 @@ class GamePane extends JPanel{
 	  }
 	  
 	  public void paintComponent(Graphics g) {
-	      g.drawImage(img, 3, 0, null);
+	      g.drawImage(img, 0, 0, null);
 	  }
 }
