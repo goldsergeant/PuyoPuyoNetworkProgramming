@@ -2,11 +2,7 @@ package client;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -121,31 +117,26 @@ public class MainGameClientStart extends JFrame {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
 		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
 			JButton button=(JButton) e.getSource();
 			button.setSize(button.getWidth()+10, button.getHeight()+10);
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 			JButton button=(JButton) e.getSource();
 			button.setSize(button.getWidth()-10, button.getHeight()-10);
 		}

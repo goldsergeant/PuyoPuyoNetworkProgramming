@@ -3,23 +3,12 @@ package client;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.imageio.ImageIO;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -27,42 +16,48 @@ import javax.swing.text.StyledDocument;
 
 import gameMsg.*;
 
-public class GameView extends JFrame {
+public class GameView extends JFrame implements Runnable {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	private JTextField txtInput;
-	private String UserName;
-	private JButton btnSend;
-	private Socket socket; // 연결소켓
+	public JPanel contentPane;
+	public JTextField txtInput;
+	public String UserName;
+	public JButton btnSend;
+	public Socket socket; // 연결소켓
+	public ObjectInputStream ois;
+	public ObjectOutputStream oos;
+	public JLabel lbluserName;
+	public JTextPane textArea;
+	public JScrollPane scrollPane;
+	public GameScreen gameScreen; // 실제 게임이 진행되는 화면
+	public int status; // 게임의 상태
+	
+	public final int gameWidth = 640;
+	public final int gameHeight = 480;
+	Thread mainWork; // 스레드 객체
 
-	private ObjectInputStream ois;
-	private ObjectOutputStream oos;
-
-	private JLabel lbluserName;
-	private JTextPane textArea;
-
-	// 임시로 연결
-	private GameScreenView game;
-	private BufferedImage mainBackGround;
 	/**
 	 * Create the frame.
 	 */
 	public GameView(String userName, String ip_addr, String port_no) {
 		super("Puyo Puyo2!!");
-		game = new GameScreenView();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 651, 689);
+		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(209, 495, 231, 93);
+		//getContentPane().setBackground(new java.awt.Color(170, 0, 0));
+		
+		gameScreen = new GameScreen(this);
+		gameScreen.setBounds(10, 10, gameWidth, gameHeight);
+		contentPane.add(gameScreen);
+		
+		scrollPane = new JScrollPane();
+		scrollPane.setBounds(664, 19, 285, 381);
 		contentPane.add(scrollPane);
-
+		
 		textArea = new JTextPane();
 		textArea.setEditable(true);
 		textArea.setFont(new Font("굴림", Font.PLAIN, 14));
@@ -70,13 +65,13 @@ public class GameView extends JFrame {
 		scrollPane.setViewportView(textArea);
 
 		txtInput = new JTextField();
-		txtInput.setBounds(209, 599, 209, 40);
+		txtInput.setBounds(664, 410, 194, 40);
 		contentPane.add(txtInput);
 		txtInput.setColumns(10);
 		
 		btnSend = new JButton("Send");
 		btnSend.setFont(new Font("굴림", Font.PLAIN, 14));
-		btnSend.setBounds(462, 598, 69, 40);
+		btnSend.setBounds(880, 410, 69, 40);
 		contentPane.add(btnSend);
 
 		lbluserName = new JLabel("Name");
@@ -84,7 +79,7 @@ public class GameView extends JFrame {
 		lbluserName.setBackground(Color.WHITE);
 		lbluserName.setFont(new Font("굴림", Font.BOLD, 14));
 		lbluserName.setHorizontalAlignment(SwingConstants.CENTER);
-		lbluserName.setBounds(12, 598, 62, 40);
+		lbluserName.setBounds(664, 460, 62, 40);
 		contentPane.add(lbluserName);
 		setVisible(true);
 
@@ -101,13 +96,11 @@ public class GameView extends JFrame {
 				System.exit(0);
 			}
 		});
-		btnNewButton.setBounds(564, 598, 69, 40);
+		btnNewButton.setBounds(880, 459, 69, 40);
 		contentPane.add(btnNewButton);
 		
-		JPanel gamePane = new GamePane(new ImageIcon("src/resource/mainBackGround.bmp").getImage());
-		gamePane.setBounds(0, 0, 633, 485);
-		contentPane.add(gamePane);
-	
+
+		InitGame();
 		
 
 		try {
@@ -128,11 +121,45 @@ public class GameView extends JFrame {
 			txtInput.requestFocus();
 
 		} catch (NumberFormatException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			AppendText("connect error");
 		}
+	}
+	
+	public void run() {
+		try {
+			while (true) {
+				gameScreen.repaint();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void InitGame() {
+		
+		status = 0;
+		
+		mainWork = new Thread(this);
+		mainWork.start();
 
+		gameScreen.backGround = GrapImage("./src/resource/backGround.bmp");
+		gameScreen.repaint();
+	}
+	
+	public Image GrapImage(String fileUrl) {
+		Image img;
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		img = tk.getImage(fileUrl);
+		try {
+			MediaTracker mt = new MediaTracker(this);
+			mt.addImage(img, 0);
+			mt.waitForID(0);
+		} catch (Exception ee) {
+			ee.printStackTrace();
+			return null;
+		}
+		return img;
 	}
 
 	public GameMsg ReadGameMsg() {
@@ -143,7 +170,6 @@ public class GameView extends JFrame {
 				obj = ois.readObject();
 				cm = (GameMsg) obj;
 			} catch (ClassNotFoundException | IOException e) {
-				// TODO Auto-generated catch block
 				AppendText("ReadGameMsg Error");
 				e.printStackTrace();
 				try {
@@ -153,14 +179,12 @@ public class GameView extends JFrame {
 					socket = null;
 					return null;
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 					try {
 						oos.close();
 						socket.close();
 						ois.close();
 					} catch (IOException e2) {
-						// TODO Auto-generated catch block
 						e2.printStackTrace();
 					}
 
@@ -211,8 +235,6 @@ public class GameView extends JFrame {
 			}
 		}
 	}
-
-	// ImageIcon icon1 = new ImageIcon("src/icon1.jpg");
 
 	public void AppendIcon(ImageIcon icon) {
 		int len = textArea.getDocument().getLength();
@@ -271,27 +293,69 @@ public class GameView extends JFrame {
 				socket.close();
 				ois.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
-			// textArea.append("메세지 송신 에러!!\n");
-			// System.exit(0);
 		}
 	}
 }
 
-class GamePane extends JPanel{
-	private Image img;
-	  
-	  public GamePane(Image img) {
-	      this.img = img;
-	      setSize(new Dimension(img.getWidth(null), img.getHeight(null)));
-	      setPreferredSize(new Dimension(img.getWidth(null), img.getHeight(null)));
-	      setLayout(null);
-	  }
-	  
-	  public void paintComponent(Graphics g) {
-	      g.drawImage(img, 3, 0, null);
-	  }
+// 실제 게임화면을 보여주는 캔버스
+class GameScreen extends Canvas {
+	
+	private static final long serialVersionUID = 1L;
+	public Image backGround;
+	public GameView main;
+	public Image doubleBuffer; // 더블버퍼링용 백버퍼
+	public Graphics gc; // 더블버퍼링용 그래픽 context
+	
+	
+	public GameScreen(GameView main) {
+		this.main = main;
+	}
+	
+	public void paint(Graphics g) {
+		if (gc == null) {
+			doubleBuffer = createImage(main.gameWidth, main.gameHeight);
+			if (doubleBuffer == null) System.out.println("offScreen buffer create error");
+			else gc = doubleBuffer.getGraphics();
+			return;
+		}
+		update(g);
+	}
+	
+	public void update(Graphics g) {
+		// 화면 블링크를 방지하기 위해, paint에서 바로 화면을 그리지 않고 update method 호출
+		if (gc == null) return;
+		DoublePaint();
+		g.drawImage(doubleBuffer, 0, 0, this);
+	}
+	
+	public void DoublePaint() {
+		// 실제 그리는 동작 수행
+		switch(main.status) {
+		case 0:
+			DrawBackGround();
+			break;
+		case 1:
+			DrawBackGround();
+			break;
+		case 2:
+			DrawBackGround();
+			break;
+		case 3:
+			DrawBackGround();
+			break;
+		case 4:
+			DrawBackGround();
+			break;
+		default:
+			DrawBackGround();
+			break;
+		}
+		
+	}
+	
+	public void DrawBackGround() {
+		gc.drawImage(backGround, 0, 0, this);
+	}
 }
