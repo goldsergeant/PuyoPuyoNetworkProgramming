@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Vector;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -16,22 +18,25 @@ public class RoomList extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private String UserName;
-	private JButton btnSend;
+	private JButton btnCreate;
 	private Socket socket; // 연결소켓
 	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
-	private JTextPane textArea;
 	private JTextField txtInput;
 	
 	// 임시로 만든 버튼, 게임화면객체
 	private JButton tempGameStartButton;
 	private GameView game;
 	
+	private JList roomListView;
+	private Vector<String> roomList;
+	
 	/**
 	 * Create the frame.
 	 */
 	public RoomList(String username, String ip_addr, String port_no) {
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 392, 510);
 		contentPane = new JPanel();
@@ -43,19 +48,14 @@ public class RoomList extends JFrame {
 		scrollPane.setBounds(12, 62, 352, 340);
 		contentPane.add(scrollPane);
 		
-		textArea = new JTextPane();
-		textArea.setEditable(true);
-		textArea.setFont(new Font("굴림", Font.PLAIN, 14));
-		scrollPane.setViewportView(textArea);
-		
 		txtInput = new JTextField();
-		txtInput.setBounds(20, 423, 200, 40);
+		txtInput.setBounds(20, 423, 180, 40);
 		contentPane.add(txtInput);
 		txtInput.setColumns(10);
 
-		btnSend = new JButton("Send");
-		btnSend.setBounds(240, 423, 60, 40);
-		contentPane.add(btnSend);
+		btnCreate = new JButton("방 생성");
+		btnCreate.setBounds(210, 423, 80, 40);
+		contentPane.add(btnCreate);
 		
 		JLabel lblNewLabel = new JLabel("게임방");
 		lblNewLabel.setBounds(76, 21, 91, 31);
@@ -74,16 +74,21 @@ public class RoomList extends JFrame {
 		lblNewLabel_2.setBounds(12, 21, 56, 31);
 		contentPane.add(lblNewLabel_2);
 		
+		roomList = new Vector();
+		roomListView = new JList(roomList);
+		roomListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		scrollPane.setViewportView(roomListView);
+		
 		/**
 		 * 임시로 만든 게임 화면 입장 버튼
 		 */
 		
-		tempGameStartButton = new JButton("임시입장");
+		tempGameStartButton = new JButton("입장");
 		tempGameStartButton.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
 				
-				game = new GameView(username, "127.0.0.1", "30000");
+				game = new GameView(username, ip_addr, port_no);
 			}
 		});
 		
@@ -92,10 +97,11 @@ public class RoomList extends JFrame {
 		
 		
 		
+		//
+		//
+		
 		
 		setVisible(true);
-	
-		AppendText("User " + username + " connecting " + ip_addr + " " + port_no);
 		UserName = username;
 		
 		try {
@@ -106,13 +112,12 @@ public class RoomList extends JFrame {
 			
 			ListenNetwork net = new ListenNetwork();
 			net.start();
-			TextSendAction action = new TextSendAction();
-			btnSend.addActionListener(action);
+			RoomCreateAction action = new RoomCreateAction();
+			btnCreate.addActionListener(action);
 			txtInput.addActionListener(action);
 			txtInput.requestFocus();
 		} catch (NumberFormatException | IOException e) {
 			e.printStackTrace();
-			AppendText("connect error");
 		}
 
 	}
@@ -123,12 +128,10 @@ public class RoomList extends JFrame {
 			while (true) {
 				try {
 					Object obcm=null;
-					String msg=null;
 					GameMsg cm;
 					try {
 						obcm = ois.readObject();
 					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 						break;
 					}
@@ -136,12 +139,10 @@ public class RoomList extends JFrame {
 						break;
 					if (obcm instanceof GameMsg) {
 						cm = (GameMsg) obcm;
-						msg = String.format("[%s] %s", cm.userName, cm.data);
+						roomList.add(cm.data);
 					} else
 						continue;
-					AppendText(msg);
 				} catch (IOException e) {
-					AppendText("ois.readObject() error");
 					try {
 						ois.close();
 						oos.close();
@@ -152,42 +153,33 @@ public class RoomList extends JFrame {
 						break;
 					} // catch문 끝
 				} // 바깥 catch문끝
-
-				
+				roomListView.updateUI();
 			}
 		}
 	}
 	
 	// keyboard enter key 치면 서버로 전송
-		class TextSendAction implements ActionListener {
+		class RoomCreateAction implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Send button을 누르거나 메시지 입력하고 Enter key 치면
-				if (e.getSource() == btnSend || e.getSource() == txtInput) {
+				if (e.getSource() == btnCreate || e.getSource() == txtInput) {
 					String msg = null;
 					msg = txtInput.getText();
-					SendMessage(msg);
+					SendMessage(msg, "300");
 					txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
 					txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
+					roomListView.updateUI();
 				}
 			}
 		}
 
-	// 화면에 출력
-	public void AppendText(String msg) {
-		//textArea.append(msg + "\n");
-		int len = textArea.getDocument().getLength(); // same value as
-        textArea.setCaretPosition(len); // place caret at the end (with no selection)
- 		textArea.replaceSelection(msg + "\n"); // there is no selection, so inserts at caret
- 	}
-
 	// Server에게 network으로 전송
-	public void SendMessage(String msg) {
+	public void SendMessage(String msg, String code) {
 		try {
-			GameMsg obcm=new GameMsg(UserName, "200", msg);
+			GameMsg obcm = new GameMsg(UserName, code, msg);
 			oos.writeObject(obcm);
 		} catch (IOException e) {
-			AppendText("dos.write() error");
 			try {
 				ois.close();
 				oos.close();
@@ -195,25 +187,6 @@ public class RoomList extends JFrame {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				System.exit(0);
-			}
-		}
-	}
-	
-	public void SendChatMsg(GameMsg obj) {
-		try {
-			oos.writeObject(obj.code);
-			oos.writeObject(obj.userName);
-			oos.writeObject(obj.data);
-			oos.flush();
-		} catch (IOException e) {
-			AppendText("SendGameMsg Error");
-			e.printStackTrace();
-			try {
-				oos.close();
-				socket.close();
-				ois.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
 			}
 		}
 	}

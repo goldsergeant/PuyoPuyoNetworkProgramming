@@ -101,6 +101,7 @@ public class MainGameClientStart extends JFrame {
 		btnStart.addActionListener(action);
 		btnStart.addMouseListener(new ButtonAction());
 	}
+	
 	class Myaction implements ActionListener // 내부클래스로 액션 이벤트 처리 클래스
 	{
 		@Override
