@@ -24,11 +24,11 @@ public class MainGameServer extends JFrame {
 	private JTextField txtPortNumber;
 	private ServerSocket socket; // 서버소켓
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
-	private Vector<UserService> userVec = new Vector<UserService>(); // 연결된 사용자를 저장할 벡터
-	private Vector<String> userList = new Vector<String>(); // 회원가입자 목록
-	private Vector<String> roomList = new Vector<String>(); // 게임방 목록
-	private HashMap<String, String> roomMap = new HashMap<String, String>();
-	private HashMap<String, String> userLocation = new HashMap<String, String>();
+	public Vector<UserService> userVec = new Vector<UserService>(); // 연결된 사용자를 저장할 벡터
+	public Vector<String> userList = new Vector<String>(); // 회원가입자 목록
+	public Vector<String> roomList = new Vector<String>(); // 게임방 목록
+	public HashMap<String, Integer> roomMap = new HashMap<String, Integer>(); // 게임방마다 인원 저장
+	public HashMap<String, String> userLocation = new HashMap<String, String>(); // 유저마다 현재 위치(로비, 게임방)저장
 	
 	
 	/**
@@ -164,14 +164,6 @@ public class MainGameServer extends JFrame {
 			}
 		}
 
-		public void Login() {
-			AppendText("새로운 참가자 " + userName + " 입장.");
-			for (int i = 0; i < roomList.size(); i++) {
-				WriteOne(roomList.get(i), "300");
-				AppendText(roomList.get(i));
-			}
-		}
-
 		public void Logout() {
 			userVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
 			this.client_socket = null;
@@ -248,6 +240,7 @@ public class MainGameServer extends JFrame {
 			}
 			return cm;
 		}
+		
 		public void run() {
 			while (true) { // 사용자 접속을 계속해서 받기 위해 while문
 				GameMsg cm = null; 
@@ -261,18 +254,22 @@ public class MainGameServer extends JFrame {
 				AppendObject(cm);
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
-					Login();
+					AppendText("새로운 참가자 " + userName + " 입장.");
 				} else if (cm.code.matches("200")) {
 					String msg = String.format("[%s] %s", cm.userName, cm.data);
 					AppendText(msg); // server 화면에 출력
 					WriteGameMsg(cm);
 				} else if (cm.code.matches("300")) {
 					if (!(roomMap.containsKey(cm.data))) {
-						roomMap.put(cm.data, "1");
+						roomMap.put(cm.data, 1);
 						roomList.add(cm.data);
 						userLocation.put(cm.userName, cm.data);
 						AppendText(String.format("방 생성: %s", cm.data));
 						WriteAllObject(cm);
+					}
+				} else if (cm.code.matches("304")) {
+					for (int i = 0; i < roomList.size(); i++) {
+						WriteAllObject(new GameMsg("SERVER", "300", roomList.get(i)));
 					}
 				} else if (cm.code.matches("900")) { // logout message 처리
 					Logout();
