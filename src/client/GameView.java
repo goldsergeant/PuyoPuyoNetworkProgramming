@@ -28,13 +28,13 @@ public class GameView extends JFrame {
 	private ObjectOutputStream oos;
 	private JLabel lbluserName;
 	private JTextPane textArea;
-
+	private RoomList roomList;
 	/**
 	 * Create the frame.
 	 */
-	public GameView(String userName, String ip_addr, String port_no) {
+	public GameView(String userName, String ip_addr, String port_no,RoomList roomList) {
 		super("Puyo Puyo2!!");
-		
+		this.roomList=roomList;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
@@ -79,8 +79,7 @@ public class GameView extends JFrame {
 		btnNewButton.setFont(new Font("굴림", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GameMsg msg = new GameMsg(UserName, "900", "Bye");
-				SendGameMsg(msg);
+				roomList.SendMessage("Bye","900");
 				System.exit(0);
 			}
 		});
@@ -90,84 +89,23 @@ public class GameView extends JFrame {
 		JPanel gamePane = new GamePane(new ImageIcon("src/resource/backGround.png").getImage());
 		gamePane.setBounds(10, 10, 640, 480);
 		contentPane.add(gamePane);
-	
 		
-		try {
-			socket = new Socket(ip_addr, Integer.parseInt(port_no));
 
-			oos = new ObjectOutputStream(socket.getOutputStream());
-			oos.flush();
-			ois = new ObjectInputStream(socket.getInputStream());
-
-			GameMsg obcm = new GameMsg(userName, "100", "Hello");
-			SendGameMsg(obcm);
-
-			ListenNetwork net = new ListenNetwork();
-			net.start();
 			TextSendAction action = new TextSendAction();
 			btnSend.addActionListener(action);
 			txtInput.addActionListener(action);
 			txtInput.requestFocus();
 
-		} catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
-			AppendText("connect error");
-		}
-
+		repaint();
 	}
 
-	public GameMsg ReadGameMsg() {
-		Object obj = null;
-		GameMsg cm = null;
-
-			try {
-				obj = ois.readObject();
-				cm = (GameMsg) obj;
-			} catch (ClassNotFoundException | IOException e) {
-				AppendText("ReadGameMsg Error");
-				e.printStackTrace();
-				try {
-					oos.close();
-					socket.close();
-					ois.close();
-					socket = null;
-					return null;
-				} catch (IOException e1) {
-					e1.printStackTrace();
-					try {
-						oos.close();
-						socket.close();
-						ois.close();
-					} catch (IOException e2) {
-						e2.printStackTrace();
-					}
-
-					socket = null;
-					return null;
-				}
-
-			}
-
-
-		return cm;
-	}
-	// Server Message를 수신해서 화면에 표시
-	class ListenNetwork extends Thread {
-		public void run() {
-			while (true) {
-				GameMsg cm = ReadGameMsg();
-				if (cm==null)
-					break;
-				if (socket == null)
-					break;
-				String msg;
-				if(cm.userName.equals(UserName)) {
-					msg = String.format("%s", cm.data);
-					myAppendText(msg);
-				}else {
-				msg = String.format("[%s] %s", cm.userName, cm.data);
-				AppendText(msg);
-			}
+	public void readMessage(GameMsg cm) {
+		if(cm.code.matches("200")) {
+			System.out.println(cm.userName+" "+UserName);
+			if(cm.userName.equals(UserName)) {
+				myAppendText(cm.data);
+			}else {
+				AppendText(String.format("[%s] %s",UserName,cm.data));
 			}
 		}
 	}
@@ -195,7 +133,7 @@ public class GameView extends JFrame {
 	public void AppendText(String msg) {
 		// textArea.append(msg + "\n");
 		// AppendIcon(icon1);
-		msg = msg.trim(); // 앞뒤 blank와 \n을 제거한다.
+		msg=msg.trim(); // 앞뒤 blank와 \n을 제거한다.
 		int len = textArea.getDocument().getLength();
 		// 끝으로 이동
 		textArea.setCaretPosition(len);
@@ -223,28 +161,9 @@ public class GameView extends JFrame {
 
 	// Server에게 network으로 전송
 	public void SendMessage(String msg) {
-		GameMsg obcm = new GameMsg(UserName, "200", msg);
-		SendGameMsg(obcm);
+		roomList.SendMessage(msg,"200");
 	}
 
-	// 하나의 Message 보내는 함수
-	// Android와 호환성을 위해 code, userName, data 모드 각각 전송한다.
-	public void SendGameMsg(GameMsg obj) {
-		try {
-			oos.writeObject(obj);
-			oos.flush();
-		} catch (IOException e) {
-			AppendText("SendGameMsg Error");
-			e.printStackTrace();
-			try {
-				oos.close();
-				socket.close();
-				ois.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-		}
-	}
 }
 
 class GamePane extends JPanel{

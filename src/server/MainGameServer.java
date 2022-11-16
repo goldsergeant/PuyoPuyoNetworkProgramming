@@ -8,10 +8,12 @@ import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.NonWritableChannelException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -25,6 +27,7 @@ public class MainGameServer extends JFrame {
 	private ServerSocket socket; // 서버소켓
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
 	public Vector<UserService> userVec = new Vector<UserService>(); // 연결된 사용자를 저장할 벡터
+	public HashMap<String,String>userStatus=new HashMap<String,String>();
 	public Vector<String> userList = new Vector<String>(); // 회원가입자 목록
 	public Vector<String> roomList = new Vector<String>(); // 게임방 목록
 	public HashMap<String, Integer> roomMap = new HashMap<String, Integer>(); // 게임방마다 인원 저장
@@ -120,6 +123,7 @@ public class MainGameServer extends JFrame {
 					UserService new_user = new UserService(client_socket);
 					userVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
+					userStatus.put(new_user.userName,"O" );
 					AppendText("현재 참가자 수 " + userVec.size());
 				} catch (IOException e) {
 					AppendText("accept() error");
@@ -258,13 +262,19 @@ public class MainGameServer extends JFrame {
 				} else if (cm.code.matches("200")) {
 					String msg = String.format("[%s] %s", cm.userName, cm.data);
 					AppendText(msg); // server 화면에 출력
-					WriteGameMsg(cm);
+					for(int i=0;i<user_vc.size();i++) {
+						UserService us=user_vc.get(i);
+						if(us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+							WriteGameMsg(cm);
+						}
+					}
 				} else if (cm.code.matches("300")) {
 					if (!(roomMap.containsKey(cm.data))) {
-						roomMap.put(cm.data, 1);
+						roomMap.put(cm.data.split(" ")[0], 1);
 						roomList.add(cm.data);
 						userLocation.put(cm.userName, cm.data);
-						AppendText(String.format("방 생성: %s", cm.data));
+						AppendText(String.format("방 생성: %s %s", cm.data,cm.userName));
 						WriteAllObject(cm);
 					}
 				} else if (cm.code.matches("304")) {
@@ -274,6 +284,14 @@ public class MainGameServer extends JFrame {
 				} else if (cm.code.matches("900")) { // logout message 처리
 					Logout();
 					break;
+				}else if(cm.code.matches("301")){
+					if(roomMap.get(cm.data.split(" ")[0])<2) {
+					String opp_user=cm.data.split(" ")[1];
+					userStatus.put(opp_user, cm.userName);
+					userStatus.put(cm.userName, opp_user);
+					roomMap.put(cm.data.split(" ")[0],2);
+					WriteGameMsg(new GameMsg("server", "301",""));
+					}
 				}
 			} // while
 		} // run

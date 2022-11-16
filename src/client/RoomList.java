@@ -32,12 +32,17 @@ public class RoomList extends JFrame {
 	
 	private JList roomListView;
 	private Vector<String> roomList;
-	
+	private String ip_addr;
+	private String port_no;
+	private RoomList thisRoomList;
+	private GameView view;
 	/**
 	 * Create the frame.
 	 */
 	public RoomList(String username, String ip_addr, String port_no) {
-		
+		this.ip_addr=ip_addr;
+		this.port_no=port_no;
+		this.thisRoomList=this;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 392, 510);
 		contentPane = new JPanel();
@@ -80,16 +85,12 @@ public class RoomList extends JFrame {
 		roomListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane.setViewportView(roomListView);
 		
-		/**
-		 * 임시로 만든 게임 화면 입장 버튼
-		 */
 		
 		tempGameStartButton = new JButton("입장");
 		tempGameStartButton.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				
-				game = new GameView(username, ip_addr, port_no);
+				SendMessage(roomListView.getSelectedValue().toString(), "301");
 			}
 		});
 		
@@ -124,6 +125,7 @@ public class RoomList extends JFrame {
 			
 			ListenNetwork net = new ListenNetwork();
 			net.start();
+			SendMessage("Hello","100");
 			RoomCreateAction action = new RoomCreateAction();
 			btnCreate.addActionListener(action);
 			txtInput.addActionListener(action);
@@ -157,9 +159,13 @@ public class RoomList extends JFrame {
 								continue;
 							} else {
 								roomList.add(cm.data);
+								roomListView.updateUI();
 							}
 						} else if (cm.code.equals("200")) {
-							//
+							view.readMessage(cm);
+						}else if(cm.code.equals("301")) {
+							view=new GameView(UserName, ip_addr, port_no,thisRoomList);
+							setVisible(false);
 						}
 					} else
 						continue;
@@ -181,15 +187,19 @@ public class RoomList extends JFrame {
 	
 	// keyboard enter key 치면 서버로 전송
 	class RoomCreateAction implements ActionListener {
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// Send button을 누르거나 메시지 입력하고 Enter key 치면
 			if (e.getSource() == btnCreate || e.getSource() == txtInput) {
 				String msg = null;
-				msg = txtInput.getText();
+				msg = txtInput.getText()+" "+UserName;
 				SendMessage(msg, "300");
 				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
 				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
+				view=new GameView(UserName, ip_addr,port_no,thisRoomList);
+				setVisible(false);
+				
 			}
 		}
 	}

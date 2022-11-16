@@ -112,7 +112,7 @@ public class MainGameClientStart extends JFrame {
 			new RoomList(username, ip_addr, port_no);
 			setVisible(false);
 		}
-	}
+	}`
 	
 	class ButtonAction implements MouseListener{
 
