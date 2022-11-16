@@ -32,7 +32,7 @@ public class MainGameServer extends JFrame {
 	public Vector<String> roomList = new Vector<String>(); // 게임방 목록
 	public HashMap<String, Integer> roomMap = new HashMap<String, Integer>(); // 게임방마다 인원 저장
 	public HashMap<String, String> userLocation = new HashMap<String, String>(); // 유저마다 현재 위치(로비, 게임방)저장
-	
+	public HashMap<String, String> whoRoomMade=new HashMap<String,String>();
 	
 	/**
 	 * Launch the application.
@@ -272,6 +272,7 @@ public class MainGameServer extends JFrame {
 				} else if (cm.code.matches("300")) {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
+						whoRoomMade.put(cm.data.split(" ")[0],cm.userName);
 						roomList.add(cm.data);
 						userLocation.put(cm.userName, cm.data);
 						AppendText(String.format("방 생성: %s %s", cm.data,cm.userName));
@@ -281,7 +282,23 @@ public class MainGameServer extends JFrame {
 					for (int i = 0; i < roomList.size(); i++) {
 						WriteAllObject(new GameMsg("SERVER", "300", roomList.get(i)));
 					}
-				} else if (cm.code.matches("900")) { // logout message 처리
+				}else if(cm.code.matches("302")){
+					if(roomMap.get(cm.data)==2) {
+						roomMap.put(cm.data,1);
+						userStatus.remove(userStatus.get(cm.userName));
+						userStatus.remove(cm.userName);
+						WriteAllObject(cm);
+						}if(roomMap.get(cm.data)==0 ||cm.userName.equals(whoRoomMade.get(cm.data))) {
+							System.out.println(cm.userName+" "+whoRoomMade.get(cm.data));
+							roomMap.remove(cm.data);
+							roomList.remove(cm.data);
+							userStatus.remove(userStatus.get(cm.userName));
+							userStatus.remove(cm.userName);
+							whoRoomMade.remove(cm.data);
+							WriteAllObject(new GameMsg("server", "305", cm.data));
+						}
+				}
+				else if (cm.code.matches("900")) { // logout message 처리
 					Logout();
 					break;
 				}else if(cm.code.matches("301")){
@@ -290,7 +307,7 @@ public class MainGameServer extends JFrame {
 					userStatus.put(opp_user, cm.userName);
 					userStatus.put(cm.userName, opp_user);
 					roomMap.put(cm.data.split(" ")[0],2);
-					WriteGameMsg(new GameMsg("server", "301",""));
+					WriteGameMsg(new GameMsg("server", "301",cm.data.split(" ")[0]));
 					}
 				}
 			} // while

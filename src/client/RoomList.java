@@ -164,8 +164,15 @@ public class RoomList extends JFrame {
 						} else if (cm.code.equals("200")) {
 							view.readMessage(cm);
 						}else if(cm.code.equals("301")) {
-							view=new GameView(UserName, ip_addr, port_no,thisRoomList);
+							view=new GameView(UserName, ip_addr, port_no,thisRoomList,cm.data);
 							setVisible(false);
+						}else if(cm.code.equals("305")) {
+							for(int i=0;i<roomList.size();i++) {
+								if(roomList.get(i).startsWith(cm.data)) {
+									roomList.remove(i);
+								}
+							}
+							
 						}
 					} else
 						continue;
@@ -195,9 +202,9 @@ public class RoomList extends JFrame {
 				String msg = null;
 				msg = txtInput.getText()+" "+UserName;
 				SendMessage(msg, "300");
+				view=new GameView(UserName, ip_addr,port_no,thisRoomList,txtInput.getText());
 				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
 				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
-				view=new GameView(UserName, ip_addr,port_no,thisRoomList);
 				setVisible(false);
 				
 			}

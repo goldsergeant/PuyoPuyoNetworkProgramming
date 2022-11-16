@@ -3,6 +3,8 @@ package client;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -29,13 +31,15 @@ public class GameView extends JFrame {
 	private JLabel lbluserName;
 	private JTextPane textArea;
 	private RoomList roomList;
+	private String roomName;
+
 	/**
 	 * Create the frame.
 	 */
-	public GameView(String userName, String ip_addr, String port_no,RoomList roomList) {
+	public GameView(String userName, String ip_addr, String port_no, RoomList roomList, String roomName) {
 		super("Puyo Puyo2!!");
-		this.roomList=roomList;
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.roomList = roomList;
+		this.roomName = roomName;
 		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -56,7 +60,7 @@ public class GameView extends JFrame {
 		txtInput.setBounds(664, 410, 194, 40);
 		contentPane.add(txtInput);
 		txtInput.setColumns(10);
-		
+
 		btnSend = new JButton("Send");
 		btnSend.setFont(new Font("굴림", Font.PLAIN, 14));
 		btnSend.setBounds(880, 410, 69, 40);
@@ -79,33 +83,32 @@ public class GameView extends JFrame {
 		btnNewButton.setFont(new Font("굴림", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				roomList.SendMessage("Bye","900");
-				System.exit(0);
+				roomList.SendMessage(roomName, "302");
+				setVisible(false);
+				roomList.setVisible(true);
 			}
 		});
 		btnNewButton.setBounds(880, 459, 69, 40);
 		contentPane.add(btnNewButton);
-		
+
 		JPanel gamePane = new GamePane(new ImageIcon("src/resource/backGround.png").getImage());
 		gamePane.setBounds(10, 10, 640, 480);
 		contentPane.add(gamePane);
-		
 
-			TextSendAction action = new TextSendAction();
-			btnSend.addActionListener(action);
-			txtInput.addActionListener(action);
-			txtInput.requestFocus();
+		TextSendAction action = new TextSendAction();
+		btnSend.addActionListener(action);
+		txtInput.addActionListener(action);
+		txtInput.requestFocus();
 
 		repaint();
 	}
 
 	public void readMessage(GameMsg cm) {
-		if(cm.code.matches("200")) {
-			System.out.println(cm.userName+" "+UserName);
-			if(cm.userName.equals(UserName)) {
+		if (cm.code.matches("200")) {
+			if (cm.userName.equals(UserName)) {
 				myAppendText(cm.data);
-			}else {
-				AppendText(String.format("[%s] %s",UserName,cm.data));
+			} else {
+				AppendText(String.format("[%s] %s", UserName, cm.data));
 			}
 		}
 	}
@@ -122,24 +125,29 @@ public class GameView extends JFrame {
 				SendMessage(msg);
 				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
 				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
-				if (msg.contains("/exit")) // 종료 처리
-					System.exit(0);
 			}
 		}
 	}
 
+	public RoomList getRoomList() {
+		return roomList;
+	}
+
+	public String getRoomName() {
+		return roomName;
+	}
 
 	// 화면에 출력
 	public void AppendText(String msg) {
 		// textArea.append(msg + "\n");
 		// AppendIcon(icon1);
-		msg=msg.trim(); // 앞뒤 blank와 \n을 제거한다.
+		msg = msg.trim(); // 앞뒤 blank와 \n을 제거한다.
 		int len = textArea.getDocument().getLength();
 		// 끝으로 이동
 		textArea.setCaretPosition(len);
 		textArea.replaceSelection(msg + "\n");
 	}
-	
+
 	public void myAppendText(String msg) {
 		msg = msg.trim(); // 앞뒤 blank와 \n을 제거한다.
 		int len = textArea.getDocument().getLength();
@@ -150,7 +158,7 @@ public class GameView extends JFrame {
 		SimpleAttributeSet right = new SimpleAttributeSet();
 		StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);
 		doc.setParagraphAttributes(len, doc.getLength(), right, false);
-		len=textArea.getDocument().getLength();
+		len = textArea.getDocument().getLength();
 		textArea.setCaretPosition(len);
 		doc = textArea.getStyledDocument();
 		right = new SimpleAttributeSet();
@@ -158,25 +166,25 @@ public class GameView extends JFrame {
 		doc.setParagraphAttributes(len, doc.getLength(), right, false);
 	}
 
-
 	// Server에게 network으로 전송
 	public void SendMessage(String msg) {
-		roomList.SendMessage(msg,"200");
+		roomList.SendMessage(msg, "200");
 	}
 
 }
 
-class GamePane extends JPanel{
+class GamePane extends JPanel {
 	private Image img;
-	  
-	  public GamePane(Image img) {
-	      this.img = img;
-	      setSize(new Dimension(img.getWidth(null), img.getHeight(null)));
-	      setPreferredSize(new Dimension(img.getWidth(null), img.getHeight(null)));
-	      setLayout(null);
-	  }
-	  
-	  public void paintComponent(Graphics g) {
-	      g.drawImage(img, 0, 0, null);
-	  }
+
+	public GamePane(Image img) {
+		this.img = img;
+		setSize(new Dimension(img.getWidth(null), img.getHeight(null)));
+		setPreferredSize(new Dimension(img.getWidth(null), img.getHeight(null)));
+		setLayout(null);
+	}
+
+	public void paintComponent(Graphics g) {
+		g.drawImage(img, 0, 0, null);
+	}
 }
+
