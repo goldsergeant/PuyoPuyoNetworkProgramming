@@ -28,6 +28,7 @@ public class RoomList extends JFrame {
 	// 임시로 만든 버튼, 게임화면객체
 	private JButton tempGameStartButton;
 	private GameView game;
+	private JButton tempRefreshButton;
 	
 	private JList roomListView;
 	private Vector<String> roomList;
@@ -98,6 +99,17 @@ public class RoomList extends JFrame {
 		
 		
 		//
+		
+		tempRefreshButton = new JButton("Re");
+		tempRefreshButton.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				
+				roomListView.updateUI();
+			}
+		});
+		tempRefreshButton.setBounds(310, 21, 50, 30);
+		contentPane.add(tempRefreshButton);
 		//
 		
 		
@@ -120,6 +132,7 @@ public class RoomList extends JFrame {
 			e.printStackTrace();
 		}
 
+		SendMessage("", "304");
 	}
 	
 	// Server Message를 수신해서 화면에 표시
@@ -139,7 +152,15 @@ public class RoomList extends JFrame {
 						break;
 					if (obcm instanceof GameMsg) {
 						cm = (GameMsg) obcm;
-						roomList.add(cm.data);
+						if (cm.code.equals("300") || cm.code.equals("304")) {
+							if (roomList.contains(cm.data)) {
+								continue;
+							} else {
+								roomList.add(cm.data);
+							}
+						} else if (cm.code.equals("200")) {
+							//
+						}
 					} else
 						continue;
 				} catch (IOException e) {
@@ -159,20 +180,19 @@ public class RoomList extends JFrame {
 	}
 	
 	// keyboard enter key 치면 서버로 전송
-		class RoomCreateAction implements ActionListener {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Send button을 누르거나 메시지 입력하고 Enter key 치면
-				if (e.getSource() == btnCreate || e.getSource() == txtInput) {
-					String msg = null;
-					msg = txtInput.getText();
-					SendMessage(msg, "300");
-					txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
-					txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
-					roomListView.updateUI();
-				}
+	class RoomCreateAction implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Send button을 누르거나 메시지 입력하고 Enter key 치면
+			if (e.getSource() == btnCreate || e.getSource() == txtInput) {
+				String msg = null;
+				msg = txtInput.getText();
+				SendMessage(msg, "300");
+				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
+				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
 			}
 		}
+	}
 
 	// Server에게 network으로 전송
 	public void SendMessage(String msg, String code) {

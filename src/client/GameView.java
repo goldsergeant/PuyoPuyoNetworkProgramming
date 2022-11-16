@@ -124,7 +124,6 @@ public class GameView extends JFrame {
 				obj = ois.readObject();
 				cm = (GameMsg) obj;
 			} catch (ClassNotFoundException | IOException e) {
-				// TODO Auto-generated catch block
 				AppendText("ReadGameMsg Error");
 				e.printStackTrace();
 				try {
@@ -191,14 +190,6 @@ public class GameView extends JFrame {
 		}
 	}
 
-	// ImageIcon icon1 = new ImageIcon("src/icon1.jpg");
-
-	public void AppendIcon(ImageIcon icon) {
-		int len = textArea.getDocument().getLength();
-		// 끝으로 이동
-		textArea.setCaretPosition(len);
-		textArea.insertIcon(icon);
-	}
 
 	// 화면에 출력
 	public void AppendText(String msg) {
