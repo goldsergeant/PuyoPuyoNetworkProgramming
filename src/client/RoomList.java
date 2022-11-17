@@ -27,7 +27,6 @@ public class RoomList extends JFrame {
 	
 	// 임시로 만든 버튼, 게임화면객체
 	private JButton tempGameStartButton;
-	private GameView game;
 	private JButton tempRefreshButton;
 	
 	private JList roomListView;
@@ -172,7 +171,7 @@ public class RoomList extends JFrame {
 									roomList.remove(i);
 								}
 							}
-							
+							view.readMessage(cm);
 						}
 					} else
 						continue;

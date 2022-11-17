@@ -289,11 +289,8 @@ public class MainGameServer extends JFrame {
 						userStatus.remove(cm.userName);
 						WriteAllObject(cm);
 						}if(roomMap.get(cm.data)==0 ||cm.userName.equals(whoRoomMade.get(cm.data))) {
-							System.out.println(cm.userName+" "+whoRoomMade.get(cm.data));
 							roomMap.remove(cm.data);
 							roomList.remove(cm.data);
-							userStatus.remove(userStatus.get(cm.userName));
-							userStatus.remove(cm.userName);
 							whoRoomMade.remove(cm.data);
 							WriteAllObject(new GameMsg("server", "305", cm.data));
 						}
