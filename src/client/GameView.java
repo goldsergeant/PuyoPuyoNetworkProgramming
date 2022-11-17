@@ -109,11 +109,10 @@ public class GameView extends JFrame {
 			if (cm.userName.equals(UserName)) {
 				myAppendText(cm.data);
 			} else {
-				AppendText(String.format("[%s] %s", UserName, cm.data));
+				AppendText(String.format("[%s] %s", cm.userName, cm.data));
 			}
 		}else if(cm.code.matches("305")) {
 			if(cm.data.equals(roomName)) {
-				System.out.println(cm.data+" "+roomName);
 				setVisible(false);
 				roomList.setVisible(true);
 			}
