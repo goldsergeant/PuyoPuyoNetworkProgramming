@@ -73,6 +73,7 @@ public class GameView extends JFrame {
 		lbluserName.setHorizontalAlignment(SwingConstants.CENTER);
 		lbluserName.setBounds(664, 460, 62, 40);
 		contentPane.add(lbluserName);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 
 		AppendText("User " + userName + " connecting " + ip_addr + " " + port_no);
