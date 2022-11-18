@@ -3,6 +3,8 @@ package client;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -32,6 +34,7 @@ public class GameView extends JFrame {
 	private JTextPane textArea;
 	private RoomList roomList;
 	private String roomName;
+	
 
 	/**
 	 * Create the frame.
@@ -176,21 +179,195 @@ public class GameView extends JFrame {
 	public void SendMessage(String msg) {
 		roomList.SendMessage(msg, "200");
 	}
+	
+	
+	
+	
+	
+	/**
+	 * 게임과 관련된 모든걸 처리하는 클래스
+	 */
 
-}
+	class GamePane extends JPanel implements KeyListener {
+		
+		public final static int UP_PRESSED		=0x001; // 키 값
+		public final static int DOWN_PRESSED	=0x002;
+		public final static int LEFT_PRESSED	=0x004;
+		public final static int RIGHT_PRESSED	=0x008;
+		
+		protected Image backGround; // 배경이미지
+		public int gameStatus; // 게임 상태 0:중지, 1: 실행중
+		private int keybuff; // 키 버퍼값
+		private int random = (int)(Math.random()*5); // 블록 생성용 랜덤
+		private int myScore, enemyScore; // 나와 상대방 점수
+		
+		private int[][] myField = { // 내 게임 필드 0: 비어있음 1: 채워져있음(벽)
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 1, 1, 1, 1, 1, 1, 1}
+			};
+		
+		private int[][] enemyField = { // 상대방 게임 필드
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 0, 0, 0, 0, 0, 0, 1},
+				{1, 1, 1, 1, 1, 1, 1, 1}
+			};
+		
+		Image curPuyo;
+		Image nextPuyo;
+		
+	
+		public GamePane(Image backGround) {
+			this.backGround = backGround;
+			setSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
+			setPreferredSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
+			setLayout(null);
+			
+			initGame();
+		}
+		
+		private void initGame() { // 게임 시작시 변수 초기 설정
+			myScore = 0;
+			enemyScore = 0;
+			gameStatus = 0;
+		}
+		
+		public void checkGameOver() { // 게임 오버 처리(뿌요가 천장을 침)
+			
+			gameStatus = 0;
+		}
+		
+		public void createPuyo(Graphics g) { // 다음 뿌요 생성(아직 대기상태)
+			
+		}
+		
+		public void dropPuyo(Graphics g) { // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
+			
+		}
+		
+		public void removePuyo(Graphics g) { // 뿌요 제거
+			
+		}
+		
+		public void movePuyo(Graphics g) { // 뿌요 이동
+			
+		}
+		
+		public void turnPuyo(Graphics g) { // 현재 뿌요 회전
+			
+		}
+		
+		public void checkDropDone(Graphics g) { // 낙하중이던 뿌요가 멈췄는지 확인(바닥에 닿았는지)
+			
+		}
+		
+		/*
+		public void checkLeftWall() { // 뿌요가 왼쪽 벽에 닿으면 더이상 왼쪽으로 못감
+			
+		}
+		
+		public void checkRightWall() { // 뿌요가 오른쪽 벽에 닿으면 더이상 오른쪽으로 못감
+			
+		}
+		*/
+		
+		
+		
+		
+	
+		public void paintComponent(Graphics g) {
+			g.drawImage(backGround, 0, 0, null);
+		}
+		
+		public void keyPressed(KeyEvent e) {
+		
+			if (gameStatus == 1) {
+				switch(e.getKeyCode()) {
+				case KeyEvent.VK_LEFT:
+					keybuff|=LEFT_PRESSED;
+					break;
+				case KeyEvent.VK_UP:
+					keybuff|=UP_PRESSED;
+					break;
+				case KeyEvent.VK_RIGHT:
+					keybuff|=RIGHT_PRESSED;
+					break;
+				case KeyEvent.VK_DOWN:
+					keybuff|=DOWN_PRESSED;
+					break;
+				default:
+					break;
+				}
+			} else if (gameStatus != 1) keybuff = e.getKeyCode();
+		}
+		
+		public void keyReleased(KeyEvent e) {
+			switch(e.getKeyCode()){
+			case KeyEvent.VK_UP:
+				keybuff&=~UP_PRESSED;
+				break;
+			case KeyEvent.VK_DOWN:
+				keybuff&=~DOWN_PRESSED;
+				break;
+			case KeyEvent.VK_LEFT:
+				keybuff&=~LEFT_PRESSED;
+				break;
+			case KeyEvent.VK_RIGHT:
+				keybuff&=~RIGHT_PRESSED;
+				break;
+			}
+		}
+		
+		public void keyTyped(KeyEvent e) {}
+		
+		public void keyProcess() {
+			switch(gameStatus) {
+			case 0:
+				break;
+			case 1:
+				switch(keybuff) {
+				case 0:
+					break;
+				case UP_PRESSED:
+					break;
+				case DOWN_PRESSED:
+					break;
+				case LEFT_PRESSED:
+					break;
+				case RIGHT_PRESSED:
+					break;
+				}
+			}
+		}
+		
+		
+	} // GamePane 클래스 끝
+	
+	
+} // 전체 클래스 끝
 
-class GamePane extends JPanel {
-	private Image img;
-
-	public GamePane(Image img) {
-		this.img = img;
-		setSize(new Dimension(img.getWidth(null), img.getHeight(null)));
-		setPreferredSize(new Dimension(img.getWidth(null), img.getHeight(null)));
-		setLayout(null);
-	}
-
-	public void paintComponent(Graphics g) {
-		g.drawImage(img, 0, 0, null);
-	}
-}
 
