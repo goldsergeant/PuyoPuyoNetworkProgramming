@@ -196,16 +196,18 @@ public class GameView extends JFrame {
 		private final static int RIGHT_PRESSED	=0x008;
 		
 		Thread mainWork;
-		boolean loop = true;
+		private boolean loop = true;
 		private int delay; // 프레임 조절 딜레이 1/1000 초 단위
 		private long preTime; // loop 간격 조절을 위한 시간 체크
 		
 		private Image backGround; // 배경이미지
 		private int gameStatus; // 게임 상태 0:중지, 1: 실행중
 		private int keybuff; // 키 버퍼값
-		private int random = (int)(Math.random() * 5 + 1); // 블록 생성용 랜덤 변수
+		private int random; // 블록 생성용 랜덤 변수
 		private int myScore, enemyScore; // 나와 상대방 점수
 		private int curX, curY; // 현재 조작중인 뿌요의 위치
+		private int subX, subY; // 조작중인 두번째 뿌요의 위치
+		private int curP1, curP2; // 현재 조작중인 뿌요의 종류
 		private int startX, startY; // 새로 뿌요 생성시 위치
 		private int comboCount; // 콤보파괴시 증가하여 방해뿌요 생성 후 0으로 초기화
 		
@@ -301,7 +303,6 @@ public class GameView extends JFrame {
 			
 			myScore = 0;
 			enemyScore = 0;
-			gameStatus = 0;
 			startX = 4; // 가려지는 부분
 			startY = 1; // 가려지는 부분
 			comboCount = 0;
@@ -312,11 +313,12 @@ public class GameView extends JFrame {
 			try {
 				while(loop) {
 					preTime = System.currentTimeMillis();
-					
+
+					process();
+					keyProcess();
 					this.repaint();
-					//process(); 각종 로직 처리
-					//keyprocess(); 키 입력 처리
-					if (System.currentTimeMillis() - preTime < delay)
+					
+					if (System.currentTimeMillis() - preTime < delay) // 시간 딜레이 맞추는 작업
 						Thread.sleep(delay - System.currentTimeMillis() + preTime);
 				}
 			} catch (Exception e) {
@@ -329,17 +331,20 @@ public class GameView extends JFrame {
 		private void checkGameOver() { // 게임 오버 처리(뿌요가 천장을 침)
 			
 			gameStatus = 0;
+			loop = false;
 		}
 		
 		//private void createPuyo(Graphics g) { // 다음 뿌요 생성(아직 대기상태)
 		// 나중에 구현 일단 아래걸로 바로 시작위치에 생성하기
 		//} 
 		
-		private void dropPuyo(Graphics g) { // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
-			myField[startX][startY] = random;
-			myField[startX][startY + 1] = random;
+		private void dropPuyo() { // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
+			curP1 = (int)(Math.random() * 5 + 1);
+			curP2 = (int)(Math.random() * 5 + 1);
 			curX = startX;
 			curY = startY;
+			subX = startX;
+			subY = startY - 1;
 		}
 		
 		private void removePuyo(int x, int y) { // 뿌요 제거
@@ -347,7 +352,50 @@ public class GameView extends JFrame {
 			comboCount++;
 		}
 		
-		private void movePuyo(Graphics g) { // 뿌요 이동
+		private void turnPuyo() {
+			switch(curShape) {
+			case 0:
+				if (myField[curX + 1][curY] == 0) {
+					curShape++;
+					subX = curX + 1;
+					subY = curY;
+				}
+				break;
+			case 1:
+				if (myField[curX][curY + 1] == 0) {
+					curShape++;
+					subX = curX;
+					subY = curY + 1;
+				}
+				break;
+			case 2:
+				if (myField[curX - 1][curY] == 0) {
+					curShape++;
+					subX = curX - 1;
+					subY = curY;
+				}
+				break;
+			case 3:
+				if (myField[curX][curY - 1] == 0) {
+					curShape++;
+					subX = curX;
+					subY = curY - 1;
+				}
+				break;
+			}
+		}
+		
+		private void process() { // 각종 로직 처리
+			switch(gameStatus) {
+			case 0:
+				break;
+			case 1:
+				if (checkDropDone()) dropPuyo();
+				checkChainRule();
+			}
+		}
+		
+		private void keyProcess() { // 뿌요 이동
 			switch(gameStatus) {
 			case 0:
 				break;
@@ -356,53 +404,55 @@ public class GameView extends JFrame {
 				case 0:
 					break;
 				case UP_PRESSED:
-					curShape = (curShape + 1) % 4;
+					turnPuyo();
 					break;
 				case DOWN_PRESSED:
 					switch(curShape) {
 					case 0:
-						if (myField[curX][curY + 1] == 0) curY++;
+						if (myField[curX][curY + 1] == 0) { curY++; subY++; }
 						break;
 					case 1:
-						if (myField[curX][curY + 1] == 0 && myField[curX + 1][curY + 1] == 0) curY++;
+						if (myField[curX][curY + 1] == 0) curY++;
+						if (myField[subX][subY + 1] == 0) subY++;
 						break;
 					case 2:
-						if (myField[curX][curY + 2] == 0) curY++;
+						if (myField[curX][curY + 2] == 0) { curY++; subY++; }
 						break;
 					case 3:
-						if (myField[curX][curY + 1] == 0 && myField[curX - 1][curY + 1] == 0) curY++;
+						if (myField[curX][curY + 1] == 0) curY++;
+						if (myField[subX][subY + 1] == 0) subY++;
 						break;
 					}
 					break;
 				case LEFT_PRESSED:
 					switch(curShape) {
 					case 0:
-						if (myField[curX - 1][curY] == 0 && myField[curX - 1][curY - 1] == 0) curX--;
+						if (myField[curX - 1][curY] == 0 && myField[curX - 1][curY - 1] == 0) { curX--; subX--; }
 						break;
 					case 1:
-						if (myField[curX - 1][curY] == 0) curX--;
+						if (myField[curX - 1][curY] == 0) { curX--; subX--; }
 						break;
 					case 2:
-						if (myField[curX - 1][curY] == 0 && myField[curX - 1][curY + 1] == 0) curX--;
+						if (myField[curX - 1][curY] == 0 && myField[curX - 1][curY + 1] == 0) { curX--; subX--; }
 						break;
 					case 3:
-						if (myField[curX - 2][curY] == 0) curX--;
+						if (myField[curX - 2][curY] == 0) { curX--; subX--; }
 						break;
 					}
 					break;
 				case RIGHT_PRESSED:
 					switch(curShape) {
 					case 0:
-						if (myField[curX + 1][curY] == 0 && myField[curX + 1][curY - 1] == 0) curX++;
+						if (myField[curX + 1][curY] == 0 && myField[curX + 1][curY - 1] == 0) { curX++; subX++; }
 						break;
 					case 1:
-						if (myField[curX + 2][curY] == 0) curX++;
+						if (myField[curX + 2][curY] == 0) { curX++; subX++; }
 						break;
 					case 2:
-						if (myField[curX + 1][curY] == 0 && myField[curX + 1][curY + 1] == 0) curX++;
+						if (myField[curX + 1][curY] == 0 && myField[curX + 1][curY + 1] == 0) { curX++; subX++; }
 						break;
 					case 3:
-						if (myField[curX + 1][curY] == 0) curX++;
+						if (myField[curX + 1][curY] == 0) { curX++; subX++; }
 						break;
 					}
 					break;
@@ -410,12 +460,14 @@ public class GameView extends JFrame {
 			}
 		}
 		
-		private void checkDropDone(Graphics g) { // 낙하중이던 뿌요가 멈췄는지 확인(바닥에 닿았는지)
-			
+		private boolean checkDropDone() { // 낙하중이던 뿌요가 멈췄는지 확인(바닥에 닿았는지)
+			if (curY + 1 != 0 && subY + 1 != 0) 
+				return true;
+			return false;
 		}
 		
 		private void checkChainRule() { // 뿌요가 멈춘경우 파괴조건을 만족하는지 확인 후 파괴
-			
+			// 필드 전체를 스캔하며 확인해야함, 제거되고 내려온 뿌요도 확인
 		}
 		
 		
