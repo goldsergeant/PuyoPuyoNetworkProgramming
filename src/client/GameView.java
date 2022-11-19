@@ -34,6 +34,7 @@ public class GameView extends JFrame {
 	private JTextPane textArea;
 	private RoomList roomList;
 	private String roomName;
+	public JPanel gamePane;
 	
 
 	/**
@@ -82,7 +83,7 @@ public class GameView extends JFrame {
 		AppendText("User " + userName + " connecting " + ip_addr + " " + port_no);
 		UserName = userName;
 		lbluserName.setText(userName);
-
+		
 		JButton btnNewButton = new JButton("종 료");
 		btnNewButton.setFont(new Font("굴림", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
@@ -95,14 +96,14 @@ public class GameView extends JFrame {
 		btnNewButton.setBounds(880, 459, 69, 40);
 		contentPane.add(btnNewButton);
 
-		JPanel gamePane = new GamePane(new ImageIcon("src/resource/backGround.png").getImage());
+		gamePane = new GamePane(new ImageIcon("src/resource/backGround.png").getImage());
 		gamePane.setBounds(10, 10, 640, 480);
 		contentPane.add(gamePane);
-
+/*
 		TextSendAction action = new TextSendAction();
 		btnSend.addActionListener(action);
 		txtInput.addActionListener(action);
-
+*/
 		gamePane.requestFocus();
 		repaint();
 	}
@@ -200,10 +201,8 @@ public class GameView extends JFrame {
 		private int delay; // 프레임 조절 딜레이 1/1000 초 단위
 		private long preTime; // loop 간격 조절을 위한 시간 체크
 		
-		private Image backGround; // 배경이미지
 		private int gameStatus; // 게임 상태 0:중지, 1: 실행중
 		private int keybuff; // 키 버퍼값
-		private int random; // 블록 생성용 랜덤 변수
 		private int myScore, enemyScore; // 나와 상대방 점수
 		private int curX, curY; // 현재 조작중인 뿌요의 위치
 		private int subX, subY; // 조작중인 두번째 뿌요의 위치
@@ -225,12 +224,10 @@ public class GameView extends JFrame {
 				{9, 0, 0, 0, 0, 0, 0, 9},
 				{9, 0, 0, 0, 0, 0, 0, 9},
 				{9, 0, 0, 0, 0, 0, 0, 9},
-				{9, 0, 0, 0, 0, 0, 0, 9},
-				{9, 9, 9, 9, 9, 9, 9, 9} // 0,14 ~ 7,14
+				{9, 9, 9, 9, 9, 9, 9, 9} // 0,13 ~ 7,13
 			};
 		
 		private int[][] enemyField = { // 상대방 게임 필드, 제어 X 오로지 그리기용
-				{9, 0, 0, 0, 0, 0, 0, 9},
 				{9, 0, 0, 0, 0, 0, 0, 9},
 				{9, 0, 0, 0, 0, 0, 0, 9},
 				{9, 0, 0, 0, 0, 0, 0, 9},
@@ -277,9 +274,11 @@ public class GameView extends JFrame {
 		 * 5: 보라뿌요
 		 * 6: 방해뿌요(콤보쌓아 공격시 생성)
 		 */
-		
-		Image puyoA, puyoB;
-		Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
+
+		private Graphics gc; // 더블버퍼링용 그래픽 컨텍스트
+		private Image doubleBuffer; // 더블버퍼링용 백버퍼
+		private Image backGround; // 배경이미지
+		private Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
 				null,
 				new ImageIcon("src/resource/puyoRed.png").getImage(),
 				new ImageIcon("src/resource/puyoYellow.png").getImage(),
@@ -294,8 +293,9 @@ public class GameView extends JFrame {
 			setSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
 			setPreferredSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
 			setLayout(null);
+			addKeyListener(this);
 			
-			
+			gameStatus = 1; // temp
 			initGame();
 		}
 		
@@ -307,13 +307,15 @@ public class GameView extends JFrame {
 			startY = 1; // 가려지는 부분
 			comboCount = 0;
 			delay = 17; // 17 / 1000 = 58프레임
+			dropPuyo();
 		}
 		
 		public void run() {
 			try {
 				while(loop) {
 					preTime = System.currentTimeMillis();
-
+					
+					this.requestFocus();
 					process();
 					keyProcess();
 					this.repaint();
@@ -330,8 +332,8 @@ public class GameView extends JFrame {
 		
 		private void checkGameOver() { // 게임 오버 처리(뿌요가 천장을 침)
 			
-			gameStatus = 0;
-			loop = false;
+			//gameStatus = 0;
+			//loop = false;
 		}
 		
 		//private void createPuyo(Graphics g) { // 다음 뿌요 생성(아직 대기상태)
@@ -377,7 +379,7 @@ public class GameView extends JFrame {
 				break;
 			case 3:
 				if (myField[curX][curY - 1] == 0) {
-					curShape++;
+					curShape = 0;
 					subX = curX;
 					subY = curY - 1;
 				}
@@ -390,7 +392,7 @@ public class GameView extends JFrame {
 			case 0:
 				break;
 			case 1:
-				if (checkDropDone()) dropPuyo();
+				if (checkDropDone()) //dropPuyo();
 				checkChainRule();
 			}
 		}
@@ -472,18 +474,23 @@ public class GameView extends JFrame {
 		
 		
 		
-		private void drawField(int[][] field) { // field 의 뿌요를 그리는 함수
-			for (int i = 0; i < 15; i++) {
+		private void drawField() { // field 의 뿌요를 그리는 함수
+			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 8; j++) {
-					if (field[i][j] > 0 && field[i][j] < 7) {
-						// 화면의 좌표찍기
+					if (myField[i][j] > 0 && myField[i][j] < 7) {
+						gc.drawImage(puyoTypeImg[myField[i][j]], 32 * j, 32 * i, this);
 					}
 				}
 			}
 		}
-	
-		public void paintComponent(Graphics g) {
-			g.drawImage(backGround, 0, 0, null);
+		
+		private void drawBackGround() {
+			gc.drawImage(backGround, 0, 0, this);
+		}
+		
+		private void drawMyPuyo() {
+			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
+			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 		}
 		
 		public void keyPressed(KeyEvent e) {
@@ -531,9 +538,48 @@ public class GameView extends JFrame {
 		
 		public void keyTyped(KeyEvent e) {}
 		
+		public void paint(Graphics g) {
+			if (gc == null) {
+				doubleBuffer = createImage(640, 480);
+				if (doubleBuffer == null) System.out.println("오프스크린 버퍼 생성 실패");
+				else gc = doubleBuffer.getGraphics();
+				return;
+			}
+			update(g);
+		}
+		
+		public void update(Graphics g) {
+			if (gc == null) return;
+			doublePaint();
+			g.drawImage(doubleBuffer, 0, 0, this);
+		}
+		
+		private void doublePaint() {
+			switch (gameStatus) {
+			case 0:
+				drawBackGround();
+				break;
+			case 1:
+				drawBackGround();
+				drawField();
+				drawMyPuyo();
+				break;
+			}
+		}
+		
 		
 	} // GamePane 클래스 끝
 	
+	/*
+	public void keyPressed(KeyEvent e) {
+		gamePane.keyPressed(e);
+	}
+	
+	public void keyReleased(KeyEvent e) {
+	}
+	
+	public void keyTyped(KeyEvent e) {}
+	*/
 	
 } // 전체 클래스 끝
 
