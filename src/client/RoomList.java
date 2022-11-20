@@ -132,7 +132,7 @@ public class RoomList extends JFrame {
 		} catch (NumberFormatException | IOException e) {
 			e.printStackTrace();
 		}
-		view.setFocusable(true);
+		//view.setFocusable(true);
 		SendMessage("", "304");
 	}
 	
@@ -174,6 +174,9 @@ public class RoomList extends JFrame {
 								}
 							}
 							view.readMessage(cm);
+							view.gameScreen.requestFocus();
+						}else if(cm.code.equals("501")) {
+							view.readMessage(cm);
 							view.requestFocus();
 						}
 					} else
@@ -205,6 +208,7 @@ public class RoomList extends JFrame {
 				msg = txtInput.getText()+" "+UserName;
 				SendMessage(msg, "300");
 				view=new GameView(UserName, ip_addr,port_no,thisRoomList,txtInput.getText());
+				view.setFocusable(true);
 				view.requestFocus();
 				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
 				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다

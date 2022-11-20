@@ -5,6 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+
 //import java.awt.event.WindowAdapter;
 //import java.awt.event.WindowEvent;
 //import java.io.IOException;
@@ -57,6 +60,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int subX, subY; // 조작중인 두번째 뿌요의 위치
 	public int curP1, curP2; // 현재 조작중인 뿌요의 종류
 	public int startX, startY; // 새로 뿌요 생성시 위치
+	
+	public int enemyCurX,enemyCurY;
+	public int enemySubX,enemySubY;
+	public int enemyCurP1,enemyCurP2;
 	
 
 	public int[][] myField = { // 내 게임 필드 0: 비어있음 9: 채워져있음(벽)
@@ -125,13 +132,133 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	 */
 	
 	/**
+	 * 게임 화면을 클래스
+	 */
+
+	class GameScreen extends Canvas {
+		
+		public GameView main;
+		public Graphics gc; // 더블버퍼링용 그래픽 컨텍스트
+		public Image doubleBuffer; // 더블버퍼링용 백버퍼
+		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // 배경이미지
+		public Font font;
+		public Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
+				null,
+				new ImageIcon("src/resource/puyoRed.png").getImage(),
+				new ImageIcon("src/resource/puyoYellow.png").getImage(),
+				new ImageIcon("src/resource/puyoGreen.png").getImage(),
+				new ImageIcon("src/resource/puyoBlue.png").getImage(),
+				new ImageIcon("src/resource/puyoPurple.png").getImage()
+		};
+		
+	
+		public GameScreen(GameView gameView) {
+			this.main = gameView;
+			backGround = new ImageIcon("src/resource/backGround.png").getImage();
+//			setSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
+//			setPreferredSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
+			setLayout(null);
+		}
+		
+		
+		public void drawField() { // field 의 뿌요를 그리는 함수
+			for (int i = 0; i < 14; i++) {
+				for (int j = 0; j < 8; j++) {
+					if (myField[i][j] > 0 && myField[i][j] < 7) {
+						gc.drawImage(puyoTypeImg[myField[i][j]], 32 * j, 32 * i, this);
+					}
+				}
+			}
+		}
+		
+		public void drawEnemyField() {
+			for (int i = 0; i < 14; i++) {
+				for (int j = 0; j < 8; j++) {
+					if (enemyField[i][j] > 0 && enemyField[i][j] < 7) {
+						gc.drawImage(puyoTypeImg[enemyField[i][j]], 32 * j, 32 * i, this);
+					}
+				}
+			}
+		}
+		
+		public void drawBackGround() {
+		if(gc!=null)
+			gc.drawImage(backGround, 0, 0, this);
+		}
+		
+	
+		public void drawMyPuyo() {
+			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
+			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
+		}
+		
+		public void drawEnemyPuyo() {
+		
+			if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
+				gc.drawImage(puyoTypeImg[enemyCurP1], 32*12+32 * enemyCurX, 32 * enemyCurY, this);
+				gc.drawImage(puyoTypeImg[enemyCurP2], 32*12+32 * enemySubX, 32 * enemySubY, this);
+				System.out.println(enemyCurP1+" "+enemyCurP2+" "+enemyCurX+" "+enemyCurY+" "+enemySubX+" "+enemySubY);
+			}
+		}
+		
+		
+		
+		public void paint(Graphics g) {
+			if (gc == null) {
+				doubleBuffer = createImage(640, 480);
+				if (doubleBuffer == null) System.out.println("오프스크린 버퍼 생성 실패");
+				else gc = doubleBuffer.getGraphics();
+				return;
+			}
+			update(g);
+		}
+		
+		public void update(Graphics g) {
+			if (gc == null) return;
+			doublePaint();
+			
+			g.drawImage(doubleBuffer, 0, 0, this);
+		}
+		
+		public void doublePaint() {
+			switch (gameStatus) {
+			case 0:
+				drawBackGround();
+				break;
+			case 1:
+				drawBackGround();
+				drawField();
+				drawEnemyField();
+				drawMyPuyo();
+				drawEnemyPuyo();
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+				break;
+			}
+		}
+		
+	/*	public void doubleEnemyPaint() {
+			switch(gameStatus) {
+			case 0:
+				drawBackGround();
+				break;
+			case 1:
+				drawBackGround();
+				drawEnemyField();
+				drawEnemyPuyo();
+				break;
+			}
+		}*/
+		
+			
+	} // GameScreen 클래스 끝
+	/**
 	 * Create the frame.
 	 */
-	public GameView(String userName, String ip_addr, String port_no, RoomList roomList, String roomName) {
+	public GameView(String userName, String ip_addr, String port_no, RoomList roomList, String roomName){
 		super("Puyo Puyo2!!");
 		this.roomList = roomList;
 		this.roomName = roomName;
-		
+		this.UserName=userName;
 		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -178,6 +305,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			public void actionPerformed(ActionEvent e) {
 				roomList.SendMessage(roomName, "302");
 				setVisible(false);
+				gameStatus=0;
 				roomList.setVisible(true);
 			}
 		});
@@ -200,18 +328,19 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	}
 
 	public void readMessage(GameMsg cm) {
-//		if (cm.code.matches("200")) {
-//			if (cm.userName.equals(UserName)) {
-//				myAppendText(cm.data);
-//			} else {
-//				AppendText(String.format("[%s] %s", cm.userName, cm.data));
-//			}
-		//}else if(cm.code.matches("305")) {
+
 			if(cm.data.equals(roomName)) {
 				setVisible(false);
 				roomList.setVisible(true);
+			}else if(cm.code.matches("501")) {
+				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby 순서
+				 enemyCurP1=Integer.parseInt(enemyInformation[0]);
+				 enemyCurP2=Integer.parseInt(enemyInformation[1]);
+				 enemyCurX=Integer.parseInt(enemyInformation[2]);
+				 enemyCurY=Integer.parseInt(enemyInformation[3]);
+				 enemySubX=Integer.parseInt(enemyInformation[4]);
+				 enemySubY=Integer.parseInt(enemyInformation[5]);
 			}
-		//}
 	}
 
 	// keyboard enter key 치면 서버로 전송
@@ -292,7 +421,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		try {
 			while(loop) {
 				preTime = System.currentTimeMillis();
-
 				gameScreen.repaint();
 				process();
 				keyProcess();
@@ -321,6 +449,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (myField[subY + 1][subX] != 0 || subY + 1 == curY) {
 				myField[curY][curX] = curP1;
 				myField[subY][subX] = curP2;
+				
 				return true;
 			}
 		}
@@ -488,7 +617,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					break;
 				case 1:
 					if (myField[curY][curX + 2] == 0) { curX++; subX++; }
-					break;
+					break; 
 				case 2:
 					if (myField[curY][curX + 1] == 0 && myField[curY + 1][curX + 1] == 0) { curX++; subX++; }
 					break;
@@ -498,92 +627,14 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				}
 				break;
 			}
+			try { // 키가 너무 빠르게 먹으면 안됨 딜레이
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
-	/**
-	 * 게임 화면을 클래스
-	 */
-
-	class GameScreen extends Canvas {
-		
-		public GameView main;
-		public Graphics gc; // 더블버퍼링용 그래픽 컨텍스트
-		public Image doubleBuffer; // 더블버퍼링용 백버퍼
-		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // 배경이미지
-		public Font font;
-		public Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
-				null,
-				new ImageIcon("src/resource/puyoRed.png").getImage(),
-				new ImageIcon("src/resource/puyoYellow.png").getImage(),
-				new ImageIcon("src/resource/puyoGreen.png").getImage(),
-				new ImageIcon("src/resource/puyoBlue.png").getImage(),
-				new ImageIcon("src/resource/puyoPurple.png").getImage()
-		};
-		
-	
-		public GameScreen(GameView gameView) {
-			this.main = gameView;
-			backGround = new ImageIcon("src/resource/backGround.png").getImage();
-//			setSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
-//			setPreferredSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
-			setLayout(null);
-		}
-		
-		
-		public void drawField() { // field 의 뿌요를 그리는 함수
-			for (int i = 0; i < 14; i++) {
-				for (int j = 0; j < 8; j++) {
-					if (myField[i][j] > 0 && myField[i][j] < 7) {
-						gc.drawImage(puyoTypeImg[myField[i][j]], 32 * j, 32 * i, this);
-					}
-				}
-			}
-		}
-		
-		public void drawBackGround() {
-			gc.drawImage(backGround, 0, 0, this);
-		}
-		
-		public void drawMyPuyo() {
-			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
-			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
-		}
-		
-		
-		
-		public void paint(Graphics g) {
-			if (gc == null) {
-				doubleBuffer = createImage(640, 480);
-				if (doubleBuffer == null) System.out.println("오프스크린 버퍼 생성 실패");
-				else gc = doubleBuffer.getGraphics();
-				return;
-			}
-			update(g);
-		}
-		
-		public void update(Graphics g) {
-			if (gc == null) return;
-			doublePaint();
-			g.drawImage(doubleBuffer, 0, 0, this);
-		}
-		
-		public void doublePaint() {
-			switch (gameStatus) {
-			case 0:
-				drawBackGround();
-				break;
-			case 1:
-				drawBackGround();
-				drawField();
-				drawMyPuyo();
-				System.out.println(String.format("curX: %d , curY: %d", curX, curY));
-				break;
-			}
-		}
-		
-		
-	} // GameScreen 클래스 끝
-	
 	
 } // 전체 클래스 끝
 

@@ -294,6 +294,14 @@ public class MainGameServer extends JFrame {
 							whoRoomMade.remove(cm.data);
 							WriteAllObject(new GameMsg("server", "305", cm.data));
 						}
+				}else if(cm.code.matches("501")) {
+					for(int i=0;i<user_vc.size();i++) {
+						UserService us=user_vc.get(i);
+						if(us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+				
+						}
+					}
 				}
 				else if (cm.code.matches("900")) { // logout message Ã³¸®
 					Logout();
