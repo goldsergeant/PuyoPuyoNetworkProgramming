@@ -7,7 +7,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.io.File;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 //import java.awt.event.WindowAdapter;
 //import java.awt.event.WindowEvent;
 //import java.io.IOException;
@@ -64,7 +70,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int enemyCurX,enemyCurY;
 	public int enemySubX,enemySubY;
 	public int enemyCurP1,enemyCurP2;
-	
+	private Clip clip;
 
 	public int[][] myField = { // 내 게임 필드 0: 비어있음 9: 채워져있음(벽)
 			{9, 0, 0, 0, 0, 0, 0, 9}, // 0,0 ~ 7,0
@@ -263,6 +269,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
 //
 //		JScrollPane scrollPane = new JScrollPane();
 //		scrollPane.setBounds(664, 19, 285, 381);
@@ -305,6 +312,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				roomList.SendMessage(roomName, "302");
 				setVisible(false);
 				gameStatus=0;
+				mainWork.interrupt();
+				clip.close();
 				roomList.setVisible(true);
 			}
 		});
@@ -325,7 +334,29 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		gameScreen.requestFocus();
 		gameScreen.repaint();
 	}
-
+	public void abc() {
+        File bgm;
+        AudioInputStream stream;
+        AudioFormat format;
+        DataLine.Info info;
+        
+        bgm = new File("src/resource/bgm.wav"); // 사용시에는 개별 폴더로 변경할 것
+        
+        
+        try {
+               stream = AudioSystem.getAudioInputStream(bgm);
+               format = stream.getFormat();
+               info = new DataLine.Info(Clip.class, format);
+               clip = (Clip)AudioSystem.getLine(info);
+               clip.open(stream);
+               clip.start();
+               clip.loop(100);
+               
+        } catch (Exception e) {
+               System.out.println("err : " + e);
+               }
+        
+ }
 	public void readMessage(GameMsg cm) {
 
 			if(cm.data.equals(roomName)) {
@@ -414,6 +445,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		dropPuyo();
 		mainWork = new Thread(this);
 		mainWork.start();
+		abc();
 	}
 	
 	public void run() {
