@@ -175,7 +175,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 8; j++) {
 					if (enemyField[i][j] > 0 && enemyField[i][j] < 7) {
-						gc.drawImage(puyoTypeImg[enemyField[i][j]], 32 * j, 32 * i, this);
+						gc.drawImage(puyoTypeImg[enemyField[i][j]], 32*12+32 * j, 32 * i, this);
 					}
 				}
 			}
@@ -197,7 +197,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
 				gc.drawImage(puyoTypeImg[enemyCurP1], 32*12+32 * enemyCurX, 32 * enemyCurY, this);
 				gc.drawImage(puyoTypeImg[enemyCurP2], 32*12+32 * enemySubX, 32 * enemySubY, this);
-				System.out.println(enemyCurP1+" "+enemyCurP2+" "+enemyCurX+" "+enemyCurY+" "+enemySubX+" "+enemySubY);
 			}
 		}
 		
@@ -445,14 +444,22 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 
 	public boolean checkDropDone() { // ³«ÇÏÁßÀÌ´ø »Ñ¿ä°¡ ¸ØÃè´ÂÁö È®ÀÎ(¹Ù´Ú¿¡ ´ê¾Ò´ÂÁö)
+		
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
+				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+				enemyField[enemySubY][enemySubX] = enemyCurP2;
+			}
+		}
+		
 		if (myField[curY + 1][curX] != 0 || curY + 1 == subY) {
 			if (myField[subY + 1][subX] != 0 || subY + 1 == curY) {
 				myField[curY][curX] = curP1;
 				myField[subY][subX] = curP2;
-				
 				return true;
 			}
 		}
+		
 			
 		return false;
 	}
