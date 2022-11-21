@@ -259,6 +259,14 @@ public class MainGameServer extends JFrame {
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
 					AppendText("새로운 참가자 " + userName + " 입장.");
+					String msg="";
+					for(String key:whoRoomMade.keySet()) {
+						msg+=key+" "+whoRoomMade.get(key);
+					}
+					WriteAllObject(new GameMsg("SERVER","300",msg));
+//					for (int i = 0; i < whoRoomMade.size(); i++) {
+//						WriteAllObject(new GameMsg("SERVER", "300", ));
+//					}
 				} else if (cm.code.matches("200")) {
 					String msg = String.format("[%s] %s", cm.userName, cm.data);
 					AppendText(msg); // server 화면에 출력
@@ -273,15 +281,16 @@ public class MainGameServer extends JFrame {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
 						whoRoomMade.put(cm.data.split(" ")[0],cm.userName);
-						roomList.add(cm.data);
 						userLocation.put(cm.userName, cm.data);
-						AppendText(String.format("방 생성: %s %s", cm.data,cm.userName));
+						AppendText(String.format("방 생성: %s", cm.data));
 						WriteAllObject(cm);
 					}
 				} else if (cm.code.matches("304")) {
-					for (int i = 0; i < roomList.size(); i++) {
-						WriteAllObject(new GameMsg("SERVER", "300", roomList.get(i)));
+					String msg="";
+					for(String key:whoRoomMade.keySet()) {
+						msg+=key+" "+whoRoomMade.get(key);
 					}
+					WriteAllObject(new GameMsg("SERVER","300",msg));
 				}else if(cm.code.matches("302")){
 					if(roomMap.get(cm.data)==2) {
 						roomMap.put(cm.data,1);
@@ -290,8 +299,8 @@ public class MainGameServer extends JFrame {
 						WriteAllObject(cm);
 						}if(roomMap.get(cm.data)==0 ||cm.userName.equals(whoRoomMade.get(cm.data))) {
 							roomMap.remove(cm.data);
-							roomList.remove(cm.data);
 							whoRoomMade.remove(cm.data);
+							System.out.println("305");
 							WriteAllObject(new GameMsg("server", "305", cm.data));
 						}
 				}else if(cm.code.matches("501")) {

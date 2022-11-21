@@ -139,6 +139,7 @@ public class RoomList extends JFrame {
 	// Server Message를 수신해서 화면에 표시
 	class ListenNetwork extends Thread {
 		public void run() {
+			roomListView.updateUI();;
 			while (true) {
 				try {
 					Object obcm=null;
@@ -154,12 +155,14 @@ public class RoomList extends JFrame {
 					if (obcm instanceof GameMsg) {
 						cm = (GameMsg) obcm;
 						if (cm.code.equals("300") || cm.code.equals("304")) {
-							if (roomList.contains(cm.data)) {
-								continue;
-							} else {
-								roomList.add(cm.data);
-								roomListView.updateUI();
+							String arr[]=cm.data.split(" ");
+							for(int i=0;i<arr.length-1;i++) {
+								if(roomList.contains(arr[i]+" "+arr[i+1]))
+									continue;
+								else
+									roomList.add(arr[i]+" "+arr[i+1]);
 							}
+							roomListView.updateUI();
 						} else if (cm.code.equals("200")) {
 							view.readMessage(cm);
 							view.requestFocus();
@@ -173,8 +176,11 @@ public class RoomList extends JFrame {
 									roomList.remove(i);
 								}
 							}
+							if(view!=null) {
 							view.readMessage(cm);
 							view.gameScreen.requestFocus();
+							}
+							roomListView.updateUI();
 						}else if(cm.code.equals("501")) {
 							view.readMessage(cm);
 							view.requestFocus();
@@ -192,7 +198,6 @@ public class RoomList extends JFrame {
 						break;
 					} // catch문 끝
 				} // 바깥 catch문끝
-				roomListView.updateUI();
 			}
 		}
 	}

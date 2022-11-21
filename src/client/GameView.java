@@ -349,8 +349,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
                info = new DataLine.Info(Clip.class, format);
                clip = (Clip)AudioSystem.getLine(info);
                clip.open(stream);
-               clip.start();
-               clip.loop(100);
+              // clip.start(); //시끄러워서.. 다 만들고 주석만 풀면 됨
+              // clip.loop(100); 
                
         } catch (Exception e) {
                System.out.println("err : " + e);
@@ -361,6 +361,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 			if(cm.data.equals(roomName)) {
 				setVisible(false);
+				gameStatus=0;
+				mainWork.interrupt();
+				clip.close();
 				roomList.setVisible(true);
 			}else if(cm.code.matches("501")) {
 				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby 순서
