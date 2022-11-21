@@ -141,7 +141,7 @@ public class RoomList extends JFrame {
 	// Server Message를 수신해서 화면에 표시
 	class ListenNetwork extends Thread {
 		public void run() {
-			roomListView.updateUI();
+			tempRefreshButton.doClick();
 			while (true) {
 				try {
 					Object obcm=null;
@@ -164,7 +164,7 @@ public class RoomList extends JFrame {
 								else
 									roomList.add(arr[i]+" "+arr[i+1]);
 							}
-							roomListView.updateUI();
+							tempRefreshButton.doClick();
 						} else if (cm.code.matches("200")) {
 							view.readMessage(cm);
 							view.requestFocus();
@@ -182,7 +182,7 @@ public class RoomList extends JFrame {
 							view.readMessage(cm);
 							view.gameScreen.requestFocus();
 							}
-							roomListView.updateUI();
+							tempRefreshButton.doClick();
 						}else if(cm.code.equals("501")) {
 							view.readMessage(cm);
 							view.requestFocus();
