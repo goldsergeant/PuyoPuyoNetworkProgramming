@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -154,7 +156,7 @@ public class RoomList extends JFrame {
 						break;
 					if (obcm instanceof GameMsg) {
 						cm = (GameMsg) obcm;
-						if (cm.code.equals("300") || cm.code.equals("304")) {
+						if (cm.code.matches("300") || cm.code.matches("304")) {
 							String arr[]=cm.data.split(" ");
 							for(int i=0;i<arr.length-1;i+=2) {
 								if(roomList.contains(arr[i]+" "+arr[i+1]))
@@ -163,14 +165,14 @@ public class RoomList extends JFrame {
 									roomList.add(arr[i]+" "+arr[i+1]);
 							}
 							roomListView.updateUI();
-						} else if (cm.code.equals("200")) {
+						} else if (cm.code.matches("200")) {
 							view.readMessage(cm);
 							view.requestFocus();
-						}else if(cm.code.equals("301")) {
+						}else if(cm.code.matches("301")) {
 							view=new GameView(UserName, ip_addr, port_no,thisRoomList,cm.data);
 							view.requestFocus();
 							setVisible(false);
-						}else if(cm.code.equals("305")) {
+						}else if(cm.code.matches("305")) {
 							for(int i=0;i<roomList.size();i++) {
 								if(roomList.get(i).startsWith(cm.data)) {
 									roomList.remove(i);

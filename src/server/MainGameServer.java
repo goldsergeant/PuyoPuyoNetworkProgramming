@@ -174,19 +174,13 @@ public class MainGameServer extends JFrame {
 			AppendText("사용자 " + "[" + userName + "] 퇴장. 현재 참가자 수 " + userVec.size());
 		}
 
-		// 모든 User들에게 방송. 각각의 UserService Thread의 WriteONe() 을 호출한다.
-		public void WriteAll(String str) {
-			for (int i = 0; i < user_vc.size(); i++) {
-				UserService user = (UserService) user_vc.elementAt(i);
-				user.WriteOne(str, "200");
-			}
-		}
 		// 모든 User들에게 Object를 방송.
 		public void WriteAllObject(GameMsg obj) {
 			for (int i = 0; i < user_vc.size(); i++) {
 				UserService user = (UserService) user_vc.elementAt(i);
 				user.WriteGameMsg(obj);
 			}
+			System.out.println(user_vc.toString());
 		}
 
 		// 나를 제외한 User들에게 방송. 각각의 UserService Thread의 WriteOne() 을 호출한다.
@@ -281,10 +275,9 @@ public class MainGameServer extends JFrame {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
 						whoRoomMade.put(cm.data.split(" ")[0],cm.userName);
-						userLocation.put(cm.userName, cm.data);
 						AppendText(String.format("방 생성: %s", cm.data));
-						WriteAllObject(cm);
 					}
+					WriteAllObject(cm);
 				} else if (cm.code.matches("304")) {
 					String msg="";
 					for(String key:whoRoomMade.keySet()) {
@@ -300,7 +293,6 @@ public class MainGameServer extends JFrame {
 						}if(roomMap.get(cm.data)==0 ||cm.userName.equals(whoRoomMade.get(cm.data))) {
 							roomMap.remove(cm.data);
 							whoRoomMade.remove(cm.data);
-							System.out.println("305");
 							WriteAllObject(new GameMsg("server", "305", cm.data));
 						}
 				}else if(cm.code.matches("501")) {
@@ -308,7 +300,6 @@ public class MainGameServer extends JFrame {
 						UserService us=user_vc.get(i);
 						if(us.userName.equals(userStatus.get(cm.userName))) {
 							us.WriteGameMsg(cm);
-				
 						}
 					}
 				}
