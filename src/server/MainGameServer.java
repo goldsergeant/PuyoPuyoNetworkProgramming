@@ -261,9 +261,9 @@ public class MainGameServer extends JFrame {
 					AppendText("새로운 참가자 " + userName + " 입장.");
 					String msg="";
 					for(String key:whoRoomMade.keySet()) {
-						msg+=key+" "+whoRoomMade.get(key);
+						msg+=key+" "+whoRoomMade.get(key)+" ";
 					}
-					WriteAllObject(new GameMsg("SERVER","300",msg));
+					WriteGameMsg(new GameMsg("SERVER","300",msg));
 //					for (int i = 0; i < whoRoomMade.size(); i++) {
 //						WriteAllObject(new GameMsg("SERVER", "300", ));
 //					}
@@ -288,7 +288,7 @@ public class MainGameServer extends JFrame {
 				} else if (cm.code.matches("304")) {
 					String msg="";
 					for(String key:whoRoomMade.keySet()) {
-						msg+=key+" "+whoRoomMade.get(key);
+						msg+=key+" "+whoRoomMade.get(key)+" ";
 					}
 					WriteAllObject(new GameMsg("SERVER","300",msg));
 				}else if(cm.code.matches("302")){

@@ -139,7 +139,7 @@ public class RoomList extends JFrame {
 	// Server Message를 수신해서 화면에 표시
 	class ListenNetwork extends Thread {
 		public void run() {
-			roomListView.updateUI();;
+			roomListView.updateUI();
 			while (true) {
 				try {
 					Object obcm=null;
@@ -156,7 +156,7 @@ public class RoomList extends JFrame {
 						cm = (GameMsg) obcm;
 						if (cm.code.equals("300") || cm.code.equals("304")) {
 							String arr[]=cm.data.split(" ");
-							for(int i=0;i<arr.length-1;i++) {
+							for(int i=0;i<arr.length-1;i+=2) {
 								if(roomList.contains(arr[i]+" "+arr[i+1]))
 									continue;
 								else
