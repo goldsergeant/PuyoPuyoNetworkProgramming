@@ -313,6 +313,13 @@ public class MainGameServer extends JFrame {
 					userStatus.put(cm.userName, opp_user);
 					roomMap.put(cm.data.split(" ")[0],2);
 					WriteGameMsg(new GameMsg("server", "301",cm.data.split(" ")[0]));
+					for(int i=0;i<user_vc.size();i++) {
+						UserService us=user_vc.get(i);
+						if(us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(new GameMsg("SERVER0", "400", ""));	
+							WriteGameMsg(new GameMsg("SERVER", "400", ""));
+						}
+					}
 					}
 				}
 			} // while

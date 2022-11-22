@@ -126,6 +126,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	 */
 	
 	public int puyoType;
+	private JTextField textField;
 	/**
 	 * 뿌요의 종류
 	 * 0: 비어있음
@@ -194,8 +195,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		
 	
 		public void drawMyPuyo() {
+			if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
 			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
+			}
 		}
 		
 		public void drawEnemyPuyo() {
@@ -324,13 +327,19 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		gameScreen.setFocusable(true);
 		gameScreen.setBounds(10, 10, 640, 480);
 		contentPane.add(gameScreen);
+		
+		textField = new JTextField();
+		textField.setHorizontalAlignment(SwingConstants.CENTER);
+		textField.setText("\uB300\uAE30..");
+		textField.setBounds(815, 10, 134, 46);
+		contentPane.add(textField);
+		textField.setColumns(10);
 		addKeyListener(this);
 //
 //		TextSendAction action = new TextSendAction();
 //		btnSend.addActionListener(action);
 //		txtInput.addActionListener(action);
 
-		initGame();
 		gameScreen.requestFocus();
 		gameScreen.repaint();
 	}
@@ -373,6 +382,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				 enemyCurY=Integer.parseInt(enemyInformation[3]);
 				 enemySubX=Integer.parseInt(enemyInformation[4]);
 				 enemySubY=Integer.parseInt(enemyInformation[5]);
+			}else if(cm.code.matches("400")) {
+				initGame();
 			}
 	}
 
@@ -449,6 +460,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		mainWork = new Thread(this);
 		mainWork.start();
 		abc();
+		textField.setText("게임 시작!!");
 	}
 	
 	public void run() {
@@ -677,7 +689,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 		}
 	}
-	
 } // 전체 클래스 끝
 
 

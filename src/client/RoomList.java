@@ -4,6 +4,8 @@ import gameMsg.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -85,8 +87,8 @@ public class RoomList extends JFrame {
 		roomListView = new JList(roomList);
 		roomListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane.setViewportView(roomListView);
-		
-		
+		DefaultListCellRenderer renderer = (DefaultListCellRenderer) roomListView.getCellRenderer();
+		renderer.setHorizontalAlignment(SwingConstants.CENTER);
 		tempGameStartButton = new JButton("입장");
 		tempGameStartButton.addActionListener(new ActionListener() {
 			
@@ -114,6 +116,11 @@ public class RoomList extends JFrame {
 		contentPane.add(tempRefreshButton);
 		//
 		
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				SendMessage("", "900");
+			}
+		});
 		
 		setVisible(true);
 		UserName = username;
@@ -183,6 +190,8 @@ public class RoomList extends JFrame {
 							view.gameScreen.requestFocus();
 							}
 							tempRefreshButton.doClick();
+						}else if(cm.code.matches("400")){
+							view.readMessage(cm);
 						}else if(cm.code.equals("501")) {
 							view.readMessage(cm);
 							view.requestFocus();
