@@ -110,6 +110,7 @@ public class RoomList extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				roomListView.updateUI();
+				repaint();
 			}
 		});
 		tempRefreshButton.setBounds(310, 21, 50, 30);

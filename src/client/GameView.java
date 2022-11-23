@@ -8,6 +8,12 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
+import java.security.PublicKey;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -55,6 +61,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 	public boolean loop = true;
 	public int delay; // 프레임 조절 딜레이 1/1000 초 단위
+	public long puyoDelay;
 	public long preTime; // loop 간격 조절을 위한 시간 체크
 	
 	public int gameStatus; // 게임 상태 0:중지, 1: 실행중
@@ -142,6 +149,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	 * 게임 화면을 클래스
 	 */
 
+	
+
 	class GameScreen extends Canvas {
 		
 		public GameView main;
@@ -195,20 +204,19 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		
 	
 		public void drawMyPuyo() {
-			if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
+		//	if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
 			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
-			}
+		//	}
 		}
 		
 		public void drawEnemyPuyo() {
 		
-			if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
+		//	if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
 				gc.drawImage(puyoTypeImg[enemyCurP1], 32*12+32 * enemyCurX, 32 * enemyCurY, this);
 				gc.drawImage(puyoTypeImg[enemyCurP2], 32*12+32 * enemySubX, 32 * enemySubY, this);
-			}
+		//	}
 		}
-		
 		
 		
 		public void paint(Graphics g) {
@@ -455,23 +463,39 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		startY = 1; // 가려지는 부분
 		comboCount = 0;
 		delay = 17; // 17 / 1000 = 58프레임
+		puyoDelay=1000;
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
 		mainWork.start();
 		abc();
 		textField.setText("게임 시작!!");
+		
+		Timer timer=new Timer();
+		TimerTask task=new TimerTask() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				puyoDown();
+			}
+		};
+		timer.scheduleAtFixedRate(task, 1000,puyoDelay );
+	
 	}
 	
 	public void run() {
 		try {
+			
 			while(loop) {
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
 				process();
 				keyProcess();
-				if (System.currentTimeMillis() - preTime < delay) // 시간 딜레이 맞추는 작업
+				if (System.currentTimeMillis() - preTime < delay) { // 시간 딜레이 맞추는 작업
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
+				}
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -486,6 +510,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		case 1:
 			if (checkDropDone()) dropPuyo();
 			checkChainRule();
+		
 		}
 	}
 	
@@ -524,6 +549,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case KeyEvent.VK_DOWN:
 			keybuff|=DOWN_PRESSED;
+			puyoDelay=300;
 			break;
 		case KeyEvent.VK_LEFT:
 			keybuff|=LEFT_PRESSED;
@@ -543,6 +569,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case KeyEvent.VK_DOWN:
 			keybuff&=~DOWN_PRESSED;
+			puyoDelay=1000;
 			break;
 		case KeyEvent.VK_LEFT:
 			keybuff&=~LEFT_PRESSED;
@@ -557,6 +584,25 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 	public void keyTyped(KeyEvent e) {}
 
+	public void puyoDown() {
+		
+		switch(curShape) {
+		case 0:
+			if (myField[curY + 1][curX] == 0) { curY++; subY++; }
+			break;
+		case 1:
+			if (myField[curY + 1][curX] == 0) curY++;
+			if (myField[subY + 1][subX] == 0) subY++;
+			break;
+		case 2:
+			if (myField[curY + 2][curX] == 0) { curY++; subY++; }
+			break;
+		case 3:
+			if (myField[curY + 1][curX] == 0) curY++;
+			if (myField[subY + 1][subX] == 0) subY++;
+			break;
+		}
+	}
 	
 	
 	
@@ -584,6 +630,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		myField[x][y] = 0;
 		comboCount++;
 	}
+	
 	
 	public void turnPuyo() {
 		switch(curShape) {
@@ -631,22 +678,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				turnPuyo();
 				break;
 			case DOWN_PRESSED:
-				switch(curShape) {
-				case 0:
-					if (myField[curY + 1][curX] == 0) { curY++; subY++; }
-					break;
-				case 1:
-					if (myField[curY + 1][curX] == 0) curY++;
-					if (myField[subY + 1][subX] == 0) subY++;
-					break;
-				case 2:
-					if (myField[curY + 2][curX] == 0) { curY++; subY++; }
-					break;
-				case 3:
-					if (myField[curY + 1][curX] == 0) curY++;
-					if (myField[subY + 1][subX] == 0) subY++;
-					break;
-				}
+				puyoDown();
 				break;
 			case LEFT_PRESSED:
 				switch(curShape) {
