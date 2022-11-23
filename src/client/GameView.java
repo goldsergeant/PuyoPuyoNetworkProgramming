@@ -8,6 +8,12 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
+import java.security.PublicKey;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -55,6 +61,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 	public boolean loop = true;
 	public int delay; // 프레임 조절 딜레이 1/1000 초 단위
+	public long puyoDelay;
 	public long preTime; // loop 간격 조절을 위한 시간 체크
 	
 	public int gameStatus; // 게임 상태 0:중지, 1: 실행중
@@ -142,6 +149,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	 * 게임 화면을 클래스
 	 */
 
+	
+
 	class GameScreen extends Canvas {
 		
 		public GameView main;
@@ -195,18 +204,18 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		
 	
 		public void drawMyPuyo() {
-			if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
+		//	if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
 			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
-			}
+		//	}
 		}
 		
 		public void drawEnemyPuyo() {
 		
-			if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
+			//if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
 				gc.drawImage(puyoTypeImg[enemyCurP1], 32*12+32 * enemyCurX, 32 * enemyCurY, this);
 				gc.drawImage(puyoTypeImg[enemyCurP2], 32*12+32 * enemySubX, 32 * enemySubY, this);
-			}
+		//	}
 		}
 		
 		
@@ -256,6 +265,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 		}*/
+		
 		
 			
 	} // GameScreen 클래스 끝
@@ -382,6 +392,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				 enemyCurY=Integer.parseInt(enemyInformation[3]);
 				 enemySubX=Integer.parseInt(enemyInformation[4]);
 				 enemySubY=Integer.parseInt(enemyInformation[5]);
+				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
+							enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+							enemyField[enemySubY][enemySubX] = enemyCurP2;
+						}
+					}
 			}else if(cm.code.matches("400")) {
 				initGame();
 			}
@@ -455,6 +471,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		startY = 1; // 가려지는 부분
 		comboCount = 0;
 		delay = 17; // 17 / 1000 = 58프레임
+		puyoDelay=1000;
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
@@ -465,15 +482,39 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 	public void run() {
 		try {
+			Timer timer=new Timer();
+			TimerTask task=new TimerTask() {
+				
+				@Override
+				public void run() {
+					switch(curShape) {
+					case 0:
+						if (myField[curY + 1][curX] == 0) { curY++; subY++; }
+						break;
+					case 1:
+						if (myField[curY + 1][curX] == 0) curY++;
+						if (myField[subY + 1][subX] == 0) subY++;
+						break;
+					case 2:
+						if (myField[curY + 2][curX] == 0) { curY++; subY++; }
+						break;
+					case 3:
+						if (myField[curY + 1][curX] == 0) curY++;
+						if (myField[subY + 1][subX] == 0) subY++;
+						break;
+					}
+				}
+			};
+			timer.scheduleAtFixedRate(task, 1000, 1000);
 			while(loop) {
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
 				process();
 				keyProcess();
-				if (System.currentTimeMillis() - preTime < delay) // 시간 딜레이 맞추는 작업
+				if (System.currentTimeMillis() - preTime < delay) { // 시간 딜레이 맞추는 작업
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
 			}
-		} catch (Exception e) {
+		}} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -484,12 +525,42 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		case 0:
 			break;
 		case 1:
-			if (checkDropDone()) dropPuyo();
-			checkChainRule();
+			if (checkDropDone()) {
+				dropPuyo();
+			}
+			checkChainRule();	
+		}
+	}
+	public void downPuyo() {
+		switch(curShape) {
+		case 0:
+			if (myField[curY + 1][curX] == 0) { curY++; subY++; }
+			break;
+		case 1:
+			if (myField[curY + 1][curX] == 0) curY++;
+			if (myField[subY + 1][subX] == 0) subY++;
+			break;
+		case 2:
+			if (myField[curY + 2][curX] == 0) { curY++; subY++; }
+			break;
+		case 3:
+			if (myField[curY + 1][curX] == 0) curY++;
+			if (myField[subY + 1][subX] == 0) subY++;
+			break;
 		}
 	}
 	
-
+	public boolean checkEnemyDropDone() {
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
+				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+				enemyField[enemySubY][enemySubX] = enemyCurP2;
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean checkDropDone() { // 낙하중이던 뿌요가 멈췄는지 확인(바닥에 닿았는지)
 		
 		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
@@ -503,6 +574,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (myField[subY + 1][subX] != 0 || subY + 1 == curY) {
 				myField[curY][curX] = curP1;
 				myField[subY][subX] = curP2;
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				return true;
 			}
 		}
