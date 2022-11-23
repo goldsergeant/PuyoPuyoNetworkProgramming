@@ -204,20 +204,19 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		
 	
 		public void drawMyPuyo() {
-		//	if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
+			if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
 			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
-		//	}
+			}
 		}
 		
 		public void drawEnemyPuyo() {
 		
-			//if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
+			if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
 				gc.drawImage(puyoTypeImg[enemyCurP1], 32*12+32 * enemyCurX, 32 * enemyCurY, this);
 				gc.drawImage(puyoTypeImg[enemyCurP2], 32*12+32 * enemySubX, 32 * enemySubY, this);
-		//	}
+			}
 		}
-		
 		
 		
 		public void paint(Graphics g) {
@@ -478,6 +477,18 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		mainWork.start();
 		abc();
 		textField.setText("게임 시작!!");
+		
+		Timer timer=new Timer();
+		TimerTask task=new TimerTask() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				puyoDown();
+			}
+		};
+		timer.scheduleAtFixedRate(task, 1000,puyoDelay );
+	
 	}
 	
 	public void run() {
@@ -513,8 +524,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				keyProcess();
 				if (System.currentTimeMillis() - preTime < delay) { // 시간 딜레이 맞추는 작업
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
+				}
+				
 			}
-		}} catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -596,6 +609,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case KeyEvent.VK_DOWN:
 			keybuff|=DOWN_PRESSED;
+			puyoDelay=300;
 			break;
 		case KeyEvent.VK_LEFT:
 			keybuff|=LEFT_PRESSED;
@@ -615,6 +629,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case KeyEvent.VK_DOWN:
 			keybuff&=~DOWN_PRESSED;
+			puyoDelay=1000;
 			break;
 		case KeyEvent.VK_LEFT:
 			keybuff&=~LEFT_PRESSED;
@@ -629,6 +644,25 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 	public void keyTyped(KeyEvent e) {}
 
+	public void puyoDown() {
+		
+		switch(curShape) {
+		case 0:
+			if (myField[curY + 1][curX] == 0) { curY++; subY++; }
+			break;
+		case 1:
+			if (myField[curY + 1][curX] == 0) curY++;
+			if (myField[subY + 1][subX] == 0) subY++;
+			break;
+		case 2:
+			if (myField[curY + 2][curX] == 0) { curY++; subY++; }
+			break;
+		case 3:
+			if (myField[curY + 1][curX] == 0) curY++;
+			if (myField[subY + 1][subX] == 0) subY++;
+			break;
+		}
+	}
 	
 	
 	
@@ -656,6 +690,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		myField[x][y] = 0;
 		comboCount++;
 	}
+	
 	
 	public void turnPuyo() {
 		switch(curShape) {
@@ -703,22 +738,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				turnPuyo();
 				break;
 			case DOWN_PRESSED:
-				switch(curShape) {
-				case 0:
-					if (myField[curY + 1][curX] == 0) { curY++; subY++; }
-					break;
-				case 1:
-					if (myField[curY + 1][curX] == 0) curY++;
-					if (myField[subY + 1][subX] == 0) subY++;
-					break;
-				case 2:
-					if (myField[curY + 2][curX] == 0) { curY++; subY++; }
-					break;
-				case 3:
-					if (myField[curY + 1][curX] == 0) curY++;
-					if (myField[subY + 1][subX] == 0) subY++;
-					break;
-				}
+				puyoDown();
 				break;
 			case LEFT_PRESSED:
 				switch(curShape) {
