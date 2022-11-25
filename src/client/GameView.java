@@ -12,8 +12,11 @@ import java.security.PublicKey;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -42,9 +45,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public JTextField txtInput;
 	public String UserName;
 	public JButton btnSend;
-//	public Socket socket; // 연결소켓
-//	public ObjectInputStream ois;
-//	public ObjectOutputStream oos;
 	public JLabel lbluserName;
 	public JTextPane textArea;
 	public RoomList roomList;
@@ -131,9 +131,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	 *    A B .
 	 *    . . .
 	 */
-	
-	public int puyoType;
+
 	private JTextField textField;
+	public int puyoType;
 	/**
 	 * 뿌요의 종류
 	 * 0: 비어있음
@@ -148,11 +148,20 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	/**
 	 * 게임 화면을 클래스
 	 */
+	
+	public boolean[][] visited = new boolean[14][8]; // 파괴체인을 위해 방문한 필드 기록
+	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // 지나간 필드 기록을 위한 배열
+	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
+	public int destroyCount; // 파괴체인을 위한 연결된 뿌요 카운트
+	
+	
+	
+	
+	
 
 	
 
 	class GameScreen extends Canvas {
-		
 		public GameView main;
 		public Graphics gc; // 더블버퍼링용 그래픽 컨텍스트
 		public Image doubleBuffer; // 더블버퍼링용 백버퍼
@@ -171,8 +180,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		public GameScreen(GameView gameView) {
 			this.main = gameView;
 			backGround = new ImageIcon("src/resource/backGround.png").getImage();
-//			setSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
-//			setPreferredSize(new Dimension(backGround.getWidth(null), backGround.getHeight(null)));
 			setLayout(null);
 		}
 		
@@ -252,19 +259,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 		}
 		
-	/*	public void doubleEnemyPaint() {
-			switch(gameStatus) {
-			case 0:
-				drawBackGround();
-				break;
-			case 1:
-				drawBackGround();
-				drawEnemyField();
-				drawEnemyPuyo();
-				break;
-			}
-		}*/
-		
 		
 			
 	} // GameScreen 클래스 끝
@@ -281,41 +275,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
-//
-//		JScrollPane scrollPane = new JScrollPane();
-//		scrollPane.setBounds(664, 19, 285, 381);
-//		contentPane.add(scrollPane);
-//
-//		textArea = new JTextPane();
-//		textArea.setEditable(true);
-//		textArea.setFont(new Font("굴림", Font.PLAIN, 14));
-//		textArea.setFocusable(false);
-//		scrollPane.setViewportView(textArea);
-//
-//		txtInput = new JTextField();
-//		txtInput.setBounds(664, 410, 194, 40);
-//		contentPane.add(txtInput);
-//		txtInput.setColumns(10);
-//
-//		btnSend = new JButton("Send");
-//		btnSend.setFont(new Font("굴림", Font.PLAIN, 14));
-//		btnSend.setBounds(880, 410, 69, 40);
-//		contentPane.add(btnSend);
-//
-//		lbluserName = new JLabel("Name");
-//		lbluserName.setBorder(new LineBorder(new Color(0, 0, 0)));
-//		lbluserName.setBackground(Color.WHITE);
-//		lbluserName.setFont(new Font("굴림", Font.BOLD, 14));
-//		lbluserName.setHorizontalAlignment(SwingConstants.CENTER);
-//		lbluserName.setBounds(664, 460, 62, 40);
-//		contentPane.add(lbluserName);
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 
-//		AppendText("User " + userName + " connecting " + ip_addr + " " + port_no);
-//		UserName = userName;
-//		lbluserName.setText(userName);
 		
 		JButton btnNewButton = new JButton("종 료");
 		btnNewButton.setFont(new Font("굴림", Font.PLAIN, 14));
@@ -344,37 +306,35 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		contentPane.add(textField);
 		textField.setColumns(10);
 		addKeyListener(this);
-//
-//		TextSendAction action = new TextSendAction();
-//		btnSend.addActionListener(action);
-//		txtInput.addActionListener(action);
 
 		gameScreen.requestFocus();
 		gameScreen.repaint();
 	}
 	public void abc() {
-        File bgm;
-        AudioInputStream stream;
-        AudioFormat format;
-        DataLine.Info info;
+//        File bgm;
+//        AudioInputStream stream;
+//        AudioFormat format;
+//        DataLine.Info info;
+//        
+//        bgm = new File("src/resource/bgm.wav"); // 사용시에는 개별 폴더로 변경할 것
+//        // 현재 파일 없는 상태, 게임에서 추출해서 넣은뒤 수정하겠음
+//        
+//        
+//        try {
+//               stream = AudioSystem.getAudioInputStream(bgm);
+//               format = stream.getFormat();
+//               info = new DataLine.Info(Clip.class, format);
+//               clip = (Clip)AudioSystem.getLine(info);
+//               clip.open(stream);
+//              // clip.start(); //시끄러워서.. 다 만들고 주석만 풀면 됨
+//              // clip.loop(100); 
+//               
+//        } catch (Exception e) {
+//           System.out.println("err : " + e);
+//       }
         
-        bgm = new File("src/resource/bgm.wav"); // 사용시에는 개별 폴더로 변경할 것
-        
-        
-        try {
-               stream = AudioSystem.getAudioInputStream(bgm);
-               format = stream.getFormat();
-               info = new DataLine.Info(Clip.class, format);
-               clip = (Clip)AudioSystem.getLine(info);
-               clip.open(stream);
-              // clip.start(); //시끄러워서.. 다 만들고 주석만 풀면 됨
-              // clip.loop(100); 
-               
-        } catch (Exception e) {
-               System.out.println("err : " + e);
-               }
-        
- }
+	}
+	
 	public void readMessage(GameMsg cm) {
 
 			if(cm.data.equals(roomName)) {
@@ -402,22 +362,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 	}
 
-	// keyboard enter key 치면 서버로 전송
-//	public class TextSendAction implements ActionListener {
-//		@Override
-//		public void actionPerformed(ActionEvent e) {
-//			// Send button을 누르거나 메시지 입력하고 Enter key 치면
-//			if (e.getSource() == btnSend || e.getSource() == txtInput) {
-//				String msg = null;
-//				// msg = String.format("[%s] %s\n", userName, txtInput.getText());
-//				msg = txtInput.getText();
-//				SendMessage(msg);
-//				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
-//				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
-//			}
-//		}
-//	}
-
 	public RoomList getRoomList() {
 		return roomList;
 	}
@@ -426,40 +370,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return roomName;
 	}
 
-	// 화면에 출력
-//	public void AppendText(String msg) {
-//		// textArea.append(msg + "\n");
-//		// AppendIcon(icon1);
-//		msg = msg.trim(); // 앞뒤 blank와 \n을 제거한다.
-//		int len = textArea.getDocument().getLength();
-//		// 끝으로 이동
-//		textArea.setCaretPosition(len);
-//		textArea.replaceSelection(msg + "\n");
-//	}
-
-//	public void myAppendText(String msg) {
-//		msg = msg.trim(); // 앞뒤 blank와 \n을 제거한다.
-//		int len = textArea.getDocument().getLength();
-//		// 끝으로 이동
-//		textArea.setCaretPosition(len);
-//		textArea.replaceSelection(msg + "\n");
-//		StyledDocument doc = textArea.getStyledDocument();
-//		SimpleAttributeSet right = new SimpleAttributeSet();
-//		StyleConstants.setAlignment(right, StyleConstants.ALIGN_RIGHT);
-//		doc.setParagraphAttributes(len, doc.getLength(), right, false);
-//		len = textArea.getDocument().getLength();
-//		textArea.setCaretPosition(len);
-//		doc = textArea.getStyledDocument();
-//		right = new SimpleAttributeSet();
-//		StyleConstants.setAlignment(right, StyleConstants.ALIGN_LEFT);
-//		doc.setParagraphAttributes(len, doc.getLength(), right, false);
-//	}
-
-	// Server에게 network으로 전송
-//	public void SendMessage(String msg) {
-//		roomList.SendMessage(msg, "200");
-//	}
-	
 
 	
 	public void initGame() { // 게임 시작시 변수 초기 설정
@@ -470,53 +380,27 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		startY = 1; // 가려지는 부분
 		comboCount = 0;
 		delay = 17; // 17 / 1000 = 58프레임
-		puyoDelay=1000;
+		puyoDelay=2000;
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
 		mainWork.start();
-		abc();
+		//abc();
 		textField.setText("게임 시작!!");
-		
-		Timer timer=new Timer();
-		TimerTask task=new TimerTask() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				puyoDown();
-			}
-		};
-		timer.scheduleAtFixedRate(task, 1000,puyoDelay );
-	
+		destroyCount = 0;
+		visitedX.clear();
+		visitedY.clear();
 	}
 	
 	public void run() {
 		try {
 			Timer timer=new Timer();
 			TimerTask task=new TimerTask() {
-				
-				@Override
 				public void run() {
-					switch(curShape) {
-					case 0:
-						if (myField[curY + 1][curX] == 0) { curY++; subY++; }
-						break;
-					case 1:
-						if (myField[curY + 1][curX] == 0) curY++;
-						if (myField[subY + 1][subX] == 0) subY++;
-						break;
-					case 2:
-						if (myField[curY + 2][curX] == 0) { curY++; subY++; }
-						break;
-					case 3:
-						if (myField[curY + 1][curX] == 0) curY++;
-						if (myField[subY + 1][subX] == 0) subY++;
-						break;
-					}
+					puyoDown();// 만약 통신 에러가 발생하면 원인인지 확인?
 				}
 			};
-			timer.scheduleAtFixedRate(task, 1000, 1000);
+			timer.scheduleAtFixedRate(task, puyoDelay, puyoDelay);
 			while(loop) {
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
@@ -540,8 +424,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		case 1:
 			if (checkDropDone()) {
 				dropPuyo();
+				checkChainRule();
 			}
-			checkChainRule();	
 		}
 	}
 	public void downPuyo() {
@@ -596,8 +480,67 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 	
-	public void checkChainRule() { // 뿌요가 멈춘경우 파괴조건을 만족하는지 확인 후 파괴
-		// 필드 전체를 스캔하며 확인해야함, 제거되고 내려온 뿌요도 확인
+	public void checkChainRule() { // 모든 필드를 확인하며 방문하지 않고, 뿌요가 있는경우 파괴로직실행
+		// 계속해서 돌리면 오류발생 가능, 뿌요가 낙하된(조작해서이던, 파괴되서이던) 경우에만 실행
+		for (int i = 0; i < 13; i++) {
+			for (int j = 1; j < 7; j++) {
+				if (myField[i][j] != 0 && !visited[i][j]) {
+					destroyCount = 0;
+					if (puyoDestroy(i, j, myField[i][j])) {
+						if (destroyCount > 3) realDestroyPuyo();
+						visitedX.clear();
+						visitedY.clear();
+					}
+				} // 방문, 뿌요존재확인
+			} // y for 문
+		} // x for문
+		
+		clearVisitedField();
+	}
+	
+	public boolean puyoDestroy(int x, int y, int puyo_type) { // 파괴로직실행, 인접 뿌요들을 확인하며 자신과 동일하면 카운트 증가
+		
+		//디버깅용
+		System.out.println(String.format("%d, %d checked", x, y));
+		visited[x][y] = true;
+		destroyCount++;
+		
+		visitedX.add(x);
+		visitedY.add(y);
+		if (!visited[x+1][y] && myField[x+1][y] == puyo_type) {
+			if (puyoDestroy(x+1, y, puyo_type));
+		}
+		if (!visited[x][y+1] && myField[x][y+1] == puyo_type) {
+			if (puyoDestroy(x, y+1, puyo_type));
+		}
+		if (!visited[x-1][y] && myField[x-1][y] == puyo_type) {
+			if (puyoDestroy(x-1, y, puyo_type));
+		}
+		if (!visited[x][y-1] && myField[x][y-1] == puyo_type) {
+			if (puyoDestroy(x,y-1, puyo_type));
+		}
+		return true;
+	}
+	
+	public void realDestroyPuyo() { // 실제 뿌요들을 필드에서 제거, 위에 쌓인 뿌요들을 드랍??
+		
+		for (int i = 0; i < visitedX.size(); i++) {
+			myField[visitedX.get(i)][visitedY.get(i)] = 0;
+			System.out.println(String.format("%d,%d is destroyed", visitedX.get(i),visitedY.get(i)));
+			
+		}
+		
+		myScore += destroyCount * 10;
+		System.out.println(String.format("my score : %d", myScore)); // 디버깅용
+		clearVisitedField();
+	}
+	
+	public void clearVisitedField() { // 방문사실 초기화
+		for (int i = 0 ; i < 13; i++) {
+			for (int j = 1; j < 7; j++) {
+				visited[i][j] = false;
+			}
+		}
 	}
 	
 
@@ -774,9 +717,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 			try { // 키가 너무 빠르게 먹으면 안됨 딜레이
-				Thread.sleep(50);
+				Thread.sleep(50); // 약간 0.05초는 너무 짧은 느낌?
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
