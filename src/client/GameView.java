@@ -13,10 +13,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -153,6 +151,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // 지나간 필드 기록을 위한 배열
 	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
 	public int destroyCount; // 파괴체인을 위한 연결된 뿌요 카운트
+	public boolean checkGravity = false; // 중력 적용을 위한 변수
 	
 	
 	
@@ -212,8 +211,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 		public void drawMyPuyo() {
 			if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
-			gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
-			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
+				gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
+				gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 			}
 		}
 		
@@ -394,19 +393,34 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 	public void run() {
 		try {
-			Timer timer=new Timer();
-			TimerTask task=new TimerTask() {
+			Timer timer = new Timer();
+			TimerTask task = new TimerTask() {
 				public void run() {
 					puyoDown();// 만약 통신 에러가 발생하면 원인인지 확인?
 				}
 			};
 			timer.scheduleAtFixedRate(task, puyoDelay, puyoDelay);
+			
+			Timer gravityTimer = new Timer();
+			TimerTask gravityTask = new TimerTask() {
+				public void run() {
+					if (checkGravity) {
+						gravity();
+					} else {
+						checkChainRule();
+					}
+				}
+			};
+			gravityTimer.scheduleAtFixedRate(gravityTask, puyoDelay, 150);
+			
 			while(loop) {
+				
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
-				process();
-				keyProcess();
-				if (System.currentTimeMillis() - preTime < delay) { // 시간 딜레이 맞추는 작업
+				process(); // 전체 프로세스 처리
+				keyProcess(); // 키 입력 받아서 처리
+				
+				if (System.currentTimeMillis() - preTime < delay) { // 시간 딜레이 맞추는 작업, 10주차 자바게임에서 가져옴
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
 				}
 				
@@ -533,6 +547,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		myScore += destroyCount * 10;
 		System.out.println(String.format("my score : %d", myScore)); // 디버깅용
 		clearVisitedField();
+		checkGravity = true;
 	}
 	
 	public void clearVisitedField() { // 방문사실 초기화
@@ -541,6 +556,28 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				visited[i][j] = false;
 			}
 		}
+	}
+	
+	public void gravity() { // 아래에 있는 뿌요가 파괴될 시 위에 있는 뿌요들은 비어있는 공간으로 내려옴
+		checkGravity = false;
+		for (int i = 12; i >= 0; i--) {
+			for (int j = 1; j < 7; j++) {
+				if (myField[i + 1][j] == 0) {
+					myField[i + 1][j] = myField[i][j];
+					myField[i][j] = 0;
+					checkGravity = true;
+				}
+			}
+		}
+		
+	}
+	
+	public void cutConnect(int t) {
+		myField[curY][curX] = curP1;
+		myField[subY][subX] = curP2;
+		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+		dropPuyo();
+		checkGravity = true;
 	}
 	
 
@@ -594,15 +631,23 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (myField[curY + 1][curX] == 0) { curY++; subY++; }
 			break;
 		case 1:
-			if (myField[curY + 1][curX] == 0) curY++;
-			if (myField[subY + 1][subX] == 0) subY++;
+			if (myField[curY + 1][curX] == 0 && myField[subY + 1][subX] == 0) {
+				curY++;
+				subY++;
+			} else { // 한쪽이 끊기면 나머지 한쪽은 자유낙하
+				cutConnect(1);
+			}
 			break;
 		case 2:
 			if (myField[curY + 2][curX] == 0) { curY++; subY++; }
 			break;
 		case 3:
-			if (myField[curY + 1][curX] == 0) curY++;
-			if (myField[subY + 1][subX] == 0) subY++;
+			if (myField[curY + 1][curX] == 0 && myField[subY + 1][subX] == 0) {
+				curY++;
+				subY++;
+			} else {
+				cutConnect(3);
+			}
 			break;
 		}
 	}
@@ -717,7 +762,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 			try { // 키가 너무 빠르게 먹으면 안됨 딜레이
-				Thread.sleep(50); // 약간 0.05초는 너무 짧은 느낌?
+				Thread.sleep(60); // 약간 0.05초는 너무 짧은 느낌?
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
