@@ -151,7 +151,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // 지나간 필드 기록을 위한 배열
 	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
 	public int destroyCount; // 파괴체인을 위한 연결된 뿌요 카운트
-	public boolean checkGravity = false; // 중력 적용을 위한 변수
+	public int checkGravity; // 0:중력 X, 1: 중력 O, 2: 중력적용완료, 파괴로직 실행
 	
 	
 	
@@ -286,7 +286,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				setVisible(false);
 				gameStatus=0;
 				mainWork.interrupt();
-				clip.close();
+				//clip.close(); 음악, 나중에 활성화시켜줄것
 				roomList.setVisible(true);
 			}
 		});
@@ -387,6 +387,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		//abc();
 		textField.setText("게임 시작!!");
 		destroyCount = 0;
+		checkGravity = 0;
 		visitedX.clear();
 		visitedY.clear();
 	}
@@ -396,7 +397,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			Timer timer = new Timer();
 			TimerTask task = new TimerTask() {
 				public void run() {
-					puyoDown();// 만약 통신 에러가 발생하면 원인인지 확인?
+					puyoDown(); // 만약 통신 에러가 발생하면 원인인지 확인?
 				}
 			};
 			timer.scheduleAtFixedRate(task, puyoDelay, puyoDelay);
@@ -404,10 +405,21 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			Timer gravityTimer = new Timer();
 			TimerTask gravityTask = new TimerTask() {
 				public void run() {
-					if (checkGravity) {
-						gravity();
-					} else {
-						checkChainRule();
+					if (checkGravity == 1) {
+						
+						checkGravity = 0;
+						
+						for (int i = 11; i >= 0; i--) {
+							for (int j = 1; j < 7; j++) {
+								if (myField[i + 1][j] == 0) {
+									myField[i + 1][j] = myField[i][j];
+									myField[i][j] = 0;
+									checkGravity = 1;
+								}
+							}
+						}
+						
+						if (checkGravity == 0) checkGravity = 2; // 중력 영향을 다 받으면 체인 룰 실행
 					}
 				}
 			};
@@ -440,24 +452,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				dropPuyo();
 				checkChainRule();
 			}
-		}
-	}
-	public void downPuyo() {
-		switch(curShape) {
-		case 0:
-			if (myField[curY + 1][curX] == 0) { curY++; subY++; }
-			break;
-		case 1:
-			if (myField[curY + 1][curX] == 0) curY++;
-			if (myField[subY + 1][subX] == 0) subY++;
-			break;
-		case 2:
-			if (myField[curY + 2][curX] == 0) { curY++; subY++; }
-			break;
-		case 3:
-			if (myField[curY + 1][curX] == 0) curY++;
-			if (myField[subY + 1][subX] == 0) subY++;
-			break;
+			if (checkGravity == 2) {
+				checkChainRule();
+				checkGravity = 0;
+			}
 		}
 	}
 	
@@ -496,6 +494,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	
 	public void checkChainRule() { // 모든 필드를 확인하며 방문하지 않고, 뿌요가 있는경우 파괴로직실행
 		// 계속해서 돌리면 오류발생 가능, 뿌요가 낙하된(조작해서이던, 파괴되서이던) 경우에만 실행
+		clearVisitedField();
+		visitedX.clear();
+		visitedY.clear();
+		
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				if (myField[i][j] != 0 && !visited[i][j]) {
@@ -508,14 +510,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				} // 방문, 뿌요존재확인
 			} // y for 문
 		} // x for문
-		
-		clearVisitedField();
 	}
 	
 	public boolean puyoDestroy(int x, int y, int puyo_type) { // 파괴로직실행, 인접 뿌요들을 확인하며 자신과 동일하면 카운트 증가
 		
-		//디버깅용
-		System.out.println(String.format("%d, %d checked", x, y));
 		visited[x][y] = true;
 		destroyCount++;
 		
@@ -527,7 +525,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		if (!visited[x][y+1] && myField[x][y+1] == puyo_type) {
 			if (puyoDestroy(x, y+1, puyo_type));
 		}
-		if (!visited[x-1][y] && myField[x-1][y] == puyo_type) {
+		if (x != 0 && !visited[x-1][y] && myField[x-1][y] == puyo_type) {
 			if (puyoDestroy(x-1, y, puyo_type));
 		}
 		if (!visited[x][y-1] && myField[x][y-1] == puyo_type) {
@@ -540,14 +538,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		
 		for (int i = 0; i < visitedX.size(); i++) {
 			myField[visitedX.get(i)][visitedY.get(i)] = 0;
-			System.out.println(String.format("%d,%d is destroyed", visitedX.get(i),visitedY.get(i)));
-			
 		}
 		
 		myScore += destroyCount * 10;
 		System.out.println(String.format("my score : %d", myScore)); // 디버깅용
 		clearVisitedField();
-		checkGravity = true;
+		checkGravity = 1;
 	}
 	
 	public void clearVisitedField() { // 방문사실 초기화
@@ -559,25 +555,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	}
 	
 	public void gravity() { // 아래에 있는 뿌요가 파괴될 시 위에 있는 뿌요들은 비어있는 공간으로 내려옴
-		checkGravity = false;
-		for (int i = 12; i >= 0; i--) {
-			for (int j = 1; j < 7; j++) {
-				if (myField[i + 1][j] == 0) {
-					myField[i + 1][j] = myField[i][j];
-					myField[i][j] = 0;
-					checkGravity = true;
-				}
-			}
-		}
 		
 	}
 	
-	public void cutConnect(int t) {
+	public void cutConnect() {
 		myField[curY][curX] = curP1;
 		myField[subY][subX] = curP2;
 		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+		checkGravity = 1;
 		dropPuyo();
-		checkGravity = true;
 	}
 	
 
@@ -635,7 +621,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				curY++;
 				subY++;
 			} else { // 한쪽이 끊기면 나머지 한쪽은 자유낙하
-				cutConnect(1);
+				cutConnect();
 			}
 			break;
 		case 2:
@@ -646,7 +632,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				curY++;
 				subY++;
 			} else {
-				cutConnect(3);
+				cutConnect();
 			}
 			break;
 		}
