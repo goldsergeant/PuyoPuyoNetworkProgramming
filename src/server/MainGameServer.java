@@ -244,7 +244,7 @@ public class MainGameServer extends JFrame {
 				GameMsg cm = null;
 				if (client_socket == null)
 					break;
-				cm = ReadGameMsg();
+				cm = (GameMsg)ReadGameMsg();
 				if (cm == null)
 					break;
 				if (cm.code.length() == 0)

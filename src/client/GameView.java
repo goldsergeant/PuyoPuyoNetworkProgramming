@@ -253,7 +253,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				drawEnemyField();
 				drawMyPuyo();
 				drawEnemyPuyo();
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			}
 		}
@@ -423,7 +422,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					puyoDown(); // 만약 통신 에러가 발생하면 원인인지 확인?
 				}
 			};
-			timer.scheduleAtFixedRate(task, puyoDelay, puyoDelay);
+			timer.scheduleAtFixedRate(task, 1000, puyoDelay); //두번째 파라미터는 언제 시작할지 결정하는 함수, puyodelay로 걸을 필요가 없음
 			
 			Timer gravityTimer = new Timer();
 			TimerTask gravityTask = new TimerTask() {
@@ -435,8 +434,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 							for (int j = 1; j < 7; j++) {
 								if (myField[i + 1][j] == 0&&gameStatus==1) {
 									myField[i + 1][j] = myField[i][j];
+									if(myField[i][j]>0) {
+										roomList.SendMessage(i+" "+j,"505");
+									}
 									myField[i][j] = 0;
-									roomList.SendMessage(Integer.toString(i)+" "+Integer.toString(j), "505");
 									checkGravity = 1;
 								}
 							}
@@ -474,12 +475,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (checkDropDone()) {
 				dropPuyo();
 				checkChainRule();
-			}
 			if (checkGravity == 2) {
 				checkChainRule();
 				checkGravity = 0;
 			}
 		}
+	}
 	}
 	
 	public boolean checkEnemyDropDone() {
@@ -506,7 +507,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (myField[subY + 1][subX] != 0 || subY + 1 == curY) {
 				myField[curY][curX] = curP1;
 				myField[subY][subX] = curP2;
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+				if(gameStatus==1)
+					roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				return true;
 			}
 		}
@@ -660,6 +662,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 			break;
 		}
+		if(gameStatus==1)
+		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 	}
 	
 	
@@ -734,9 +738,11 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			case UP_PRESSED:
 				turnPuyo();
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			case DOWN_PRESSED:
 				puyoDown();
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			case LEFT_PRESSED:
 				switch(curShape) {
@@ -753,6 +759,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					if (myField[curY][curX - 2] == 0) { curX--; subX--; }
 					break;
 				}
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			case RIGHT_PRESSED:
 				switch(curShape) {
@@ -769,6 +776,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					if (myField[curY][curX + 1] == 0) { curX++; subX++; }
 					break;
 				}
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			}
 			try { // 키가 너무 빠르게 먹으면 안됨 딜레이
