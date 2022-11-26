@@ -27,13 +27,13 @@ public class MainGameServer extends JFrame {
 	private ServerSocket socket; // 서버소켓
 	private Socket client_socket; // accept() 에서 생성된 client 소켓
 	public Vector<UserService> userVec = new Vector<UserService>(); // 연결된 사용자를 저장할 벡터
-	public HashMap<String,String>userStatus=new HashMap<String,String>();
+	public HashMap<String, String> userStatus = new HashMap<String, String>();
 	public Vector<String> userList = new Vector<String>(); // 회원가입자 목록
 	public Vector<String> roomList = new Vector<String>(); // 게임방 목록
 	public HashMap<String, Integer> roomMap = new HashMap<String, Integer>(); // 게임방마다 인원 저장
 	public HashMap<String, String> userLocation = new HashMap<String, String>(); // 유저마다 현재 위치(로비, 게임방)저장
-	public HashMap<String, String> whoRoomMade=new HashMap<String,String>();
-	
+	public HashMap<String, String> whoRoomMade = new HashMap<String, String>();
+
 	/**
 	 * Launch the application.
 	 */
@@ -54,7 +54,7 @@ public class MainGameServer extends JFrame {
 	 * Create the frame.
 	 */
 	public MainGameServer() {
-		
+
 		/**
 		 * 유저 목록은 DB를 사용하지 않고 서버에서 리스트로 관리
 		 */
@@ -63,7 +63,7 @@ public class MainGameServer extends JFrame {
 		userList.add("hansung");
 		userList.add("bugi");
 		// 위에 등록된 회원만 접속 가능
-		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 338, 440);
 		contentPane = new JPanel();
@@ -117,13 +117,13 @@ public class MainGameServer extends JFrame {
 				try {
 					AppendText("Waiting new clients ...");
 					client_socket = socket.accept(); // accept가 일어나기 전까지는 무한 대기중
-					
+
 					AppendText("새로운 참가자 from " + client_socket);
 					// User 당 하나씩 Thread 생성
 					UserService new_user = new UserService(client_socket);
 					userVec.add(new_user); // 새로운 참가자 배열에 추가
 					new_user.start(); // 만든 객체의 스레드 실행
-					userStatus.put(new_user.userName,"O" );
+					userStatus.put(new_user.userName, "O");
 					AppendText("현재 참가자 수 " + userVec.size());
 				} catch (IOException e) {
 					AppendText("accept() error");
@@ -197,36 +197,36 @@ public class MainGameServer extends JFrame {
 			GameMsg obcm = new GameMsg("SERVER", code, msg);
 			WriteGameMsg(obcm);
 		}
-		
+
 		//
 		public void WriteGameMsg(GameMsg obj) {
 			try {
-			    oos.writeObject(obj);
-			} 
-			catch (IOException e) {
-				AppendText("oos.writeObject(ob) error");		
+				oos.writeObject(obj);
+			} catch (IOException e) {
+				AppendText("oos.writeObject(ob) error");
 				try {
 					ois.close();
 					oos.close();
 					client_socket.close();
 					client_socket = null;
 					ois = null;
-					oos = null;				
+					oos = null;
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
 				Logout();
-			
+
 			}
 		}
-		
+
 		public GameMsg ReadGameMsg() {
 			Object obj = null;
 			GameMsg cm = null;
 			// Android와 호환성을 위해 각각의 Field를 따로따로 읽는다.
 			try {
 				obj = ois.readObject();
-				cm=(GameMsg) obj;
+				if(obj instanceof GameMsg)
+					cm = (GameMsg)obj;
 			} catch (ClassNotFoundException e) {
 				Logout();
 				e.printStackTrace();
@@ -238,10 +238,10 @@ public class MainGameServer extends JFrame {
 			}
 			return cm;
 		}
-		
+
 		public void run() {
 			while (true) { // 사용자 접속을 계속해서 받기 위해 while문
-				GameMsg cm = null; 
+				GameMsg cm = null;
 				if (client_socket == null)
 					break;
 				cm = ReadGameMsg();
@@ -253,20 +253,20 @@ public class MainGameServer extends JFrame {
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
 					AppendText("새로운 참가자 " + userName + " 입장.");
-					String msg="";
-					for(String key:whoRoomMade.keySet()) {
-						msg+=key+" "+whoRoomMade.get(key)+" ";
+					String msg = "";
+					for (String key : whoRoomMade.keySet()) {
+						msg += key + " " + whoRoomMade.get(key) + " ";
 					}
-					WriteGameMsg(new GameMsg("SERVER","300",msg));
+					WriteGameMsg(new GameMsg("SERVER", "300", msg));
 //					for (int i = 0; i < whoRoomMade.size(); i++) {
 //						WriteAllObject(new GameMsg("SERVER", "300", ));
 //					}
 				} else if (cm.code.matches("200")) {
 					String msg = String.format("[%s] %s", cm.userName, cm.data);
 					AppendText(msg); // server 화면에 출력
-					for(int i=0;i<user_vc.size();i++) {
-						UserService us=user_vc.get(i);
-						if(us.userName.equals(userStatus.get(cm.userName))) {
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
 							us.WriteGameMsg(cm);
 							WriteGameMsg(cm);
 						}
@@ -274,31 +274,53 @@ public class MainGameServer extends JFrame {
 				} else if (cm.code.matches("300")) {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
-						whoRoomMade.put(cm.data.split(" ")[0],cm.userName);
+						whoRoomMade.put(cm.data.split(" ")[0], cm.userName);
 						AppendText(String.format("방 생성: %s", cm.data));
 					}
 					WriteAllObject(cm);
 				} else if (cm.code.matches("304")) {
-					String msg="";
-					for(String key:whoRoomMade.keySet()) {
-						msg+=key+" "+whoRoomMade.get(key)+" ";
+					String msg = "";
+					for (String key : whoRoomMade.keySet()) {
+						msg += key + " " + whoRoomMade.get(key) + " ";
 					}
-					WriteAllObject(new GameMsg("SERVER","300",msg));
-				}else if(cm.code.matches("302")){
-					if(roomMap.get(cm.data)==2) {
-						roomMap.put(cm.data,1);
+					WriteAllObject(new GameMsg("SERVER", "300", msg));
+				} else if (cm.code.matches("302")) {
+					if (roomMap.get(cm.data) == 2) {
+						roomMap.put(cm.data, 1);
 						userStatus.remove(userStatus.get(cm.userName));
 						userStatus.remove(cm.userName);
 						WriteAllObject(cm);
-						}if(roomMap.get(cm.data)==0 ||cm.userName.equals(whoRoomMade.get(cm.data))) {
-							roomMap.remove(cm.data);
-							whoRoomMade.remove(cm.data);
-							WriteAllObject(new GameMsg("server", "305", cm.data));
+					}
+					if (roomMap.get(cm.data) == 0 || cm.userName.equals(whoRoomMade.get(cm.data))) {
+						roomMap.remove(cm.data);
+						whoRoomMade.remove(cm.data);
+						WriteAllObject(new GameMsg("server", "305", cm.data));
+					}
+				} else if (cm.code.matches("501")) {
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
 						}
-				}else if(cm.code.matches("501")) {
-					for(int i=0;i<user_vc.size();i++) {
-						UserService us=user_vc.get(i);
-						if(us.userName.equals(userStatus.get(cm.userName))) {
+					}
+				} else if (cm.code.matches("502")) {
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+						}
+					}
+				} else if (cm.code.matches("505")) {
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+						}
+					}
+				}else if(cm.code.matches("506")){
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
 							us.WriteGameMsg(cm);
 						}
 					}
@@ -306,20 +328,20 @@ public class MainGameServer extends JFrame {
 				else if (cm.code.matches("900")) { // logout message 처리
 					Logout();
 					break;
-				}else if(cm.code.matches("301")){
-					if(roomMap.get(cm.data.split(" ")[0])<2) {
-					String opp_user=cm.data.split(" ")[1];
-					userStatus.put(opp_user, cm.userName);
-					userStatus.put(cm.userName, opp_user);
-					roomMap.put(cm.data.split(" ")[0],2);
-					WriteGameMsg(new GameMsg("server", "301",cm.data.split(" ")[0]));
-					for(int i=0;i<user_vc.size();i++) {
-						UserService us=user_vc.get(i);
-						if(us.userName.equals(userStatus.get(cm.userName))) {
-							us.WriteGameMsg(new GameMsg("SERVER0", "400", ""));	
-							WriteGameMsg(new GameMsg("SERVER", "400", ""));
+				} else if (cm.code.matches("301")) {
+					if (roomMap.get(cm.data.split(" ")[0]) < 2) {
+						String opp_user = cm.data.split(" ")[1];
+						userStatus.put(opp_user, cm.userName);
+						userStatus.put(cm.userName, opp_user);
+						roomMap.put(cm.data.split(" ")[0], 2);
+						WriteGameMsg(new GameMsg("server", "301", cm.data.split(" ")[0]));
+						for (int i = 0; i < user_vc.size(); i++) {
+							UserService us = user_vc.get(i);
+							if (us.userName.equals(userStatus.get(cm.userName))) {
+								us.WriteGameMsg(new GameMsg("SERVER", "400", ""));
+								WriteGameMsg(new GameMsg("SERVER", "400", ""));
+							}
 						}
-					}
 					}
 				}
 			} // while

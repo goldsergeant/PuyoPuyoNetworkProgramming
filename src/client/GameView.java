@@ -340,8 +340,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				setVisible(false);
 				gameStatus=0;
 				mainWork.interrupt();
-				clip.close();
+				//clip.close(); 나중에 실행
 				roomList.setVisible(true);
+			}else if(cm.code.matches("400")) {
+				initGame();
 			}else if(cm.code.matches("501")) {
 				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby 순서
 				 enemyCurP1=Integer.parseInt(enemyInformation[0]);
@@ -356,8 +358,29 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 							enemyField[enemySubY][enemySubX] = enemyCurP2;
 						}
 					}
-			}else if(cm.code.matches("400")) {
-				initGame();
+			}else if(cm.code.matches("502")) {
+				String enemyInformation[]=cm.data.split(" ");
+				enemyField[Integer.parseInt(enemyInformation[0])][Integer.parseInt(enemyInformation[1])]=0;
+			}else if(cm.code.matches("505")) {
+				String enemyInformation[]=cm.data.split(" ");
+				int i=Integer.parseInt(enemyInformation[0]);
+				int j=Integer.parseInt(enemyInformation[1]);
+				enemyField[i + 1][j] = enemyField[i][j];
+				enemyField[i][j] = 0;
+			}else if(cm.code.matches("506")) {
+				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby 순서
+				 int enemyCurP1=Integer.parseInt(enemyInformation[0]);
+				 int enemyCurP2=Integer.parseInt(enemyInformation[1]);
+				 int enemyCurX=Integer.parseInt(enemyInformation[2]);
+				 int enemyCurY=Integer.parseInt(enemyInformation[3]);
+				 int enemySubX=Integer.parseInt(enemyInformation[4]);
+				 int enemySubY=Integer.parseInt(enemyInformation[5]);
+				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
+							enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+							enemyField[enemySubY][enemySubX] = enemyCurP2;
+						}
+					}
 			}
 	}
 
@@ -406,14 +429,14 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			TimerTask gravityTask = new TimerTask() {
 				public void run() {
 					if (checkGravity == 1) {
-						
 						checkGravity = 0;
 						
 						for (int i = 11; i >= 0; i--) {
 							for (int j = 1; j < 7; j++) {
-								if (myField[i + 1][j] == 0) {
+								if (myField[i + 1][j] == 0&&gameStatus==1) {
 									myField[i + 1][j] = myField[i][j];
 									myField[i][j] = 0;
+									roomList.SendMessage(Integer.toString(i)+" "+Integer.toString(j), "505");
 									checkGravity = 1;
 								}
 							}
@@ -538,10 +561,11 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		
 		for (int i = 0; i < visitedX.size(); i++) {
 			myField[visitedX.get(i)][visitedY.get(i)] = 0;
+			roomList.SendMessage(visitedX.get(i)+" "+visitedY.get(i), "502");
 		}
 		
 		myScore += destroyCount * 10;
-		System.out.println(String.format("my score : %d", myScore)); // 디버깅용
+		//System.out.println(String.format("my score : %d", myScore)); // 디버깅용
 		clearVisitedField();
 		checkGravity = 1;
 	}
@@ -561,7 +585,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public void cutConnect() {
 		myField[curY][curX] = curP1;
 		myField[subY][subX] = curP2;
-		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "506");
 		checkGravity = 1;
 		dropPuyo();
 	}
