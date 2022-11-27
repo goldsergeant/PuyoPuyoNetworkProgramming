@@ -47,143 +47,104 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public JTextPane textArea;
 	public RoomList roomList;
 	public String roomName;
-	
+
 	public GameScreen gameScreen;
 	Thread mainWork;
-	
-	private final static int UP_PRESSED	=0x001; // Å° °ª
-	private final static int DOWN_PRESSED	=0x002;
-	private final static int LEFT_PRESSED	=0x004;
-	private final static int RIGHT_PRESSED	=0x008;
-	public int keybuff; // Å° ¹öÆÛ°ª
+
+	private final static int UP_PRESSED = 0x001; // í‚¤ ê°’
+	private final static int DOWN_PRESSED = 0x002;
+	private final static int LEFT_PRESSED = 0x004;
+	private final static int RIGHT_PRESSED = 0x008;
+	public int keybuff; // í‚¤ ë²„í¼ê°’
 
 	public boolean loop = true;
-	public int delay; // ÇÁ·¹ÀÓ Á¶Àı µô·¹ÀÌ 1/1000 ÃÊ ´ÜÀ§
+	public int delay; // í”„ë ˆì„ ì¡°ì ˆ ë”œë ˆì´ 1/1000 ì´ˆ ë‹¨ìœ„
 	public long puyoDelay;
-	public long preTime; // loop °£°İ Á¶ÀıÀ» À§ÇÑ ½Ã°£ Ã¼Å©
-	
-	public int gameStatus; // °ÔÀÓ »óÅÂ 0:ÁßÁö, 1: ½ÇÇàÁß
-	
-	public int myScore, enemyScore; // ³ª¿Í »ó´ë¹æ Á¡¼ö
-	public int comboCount; // ÄŞº¸ÆÄ±«½Ã Áõ°¡ÇÏ¿© ¹æÇØ»Ñ¿ä »ı¼º ÈÄ 0À¸·Î ÃÊ±âÈ­
+	public long preTime; // loop ê°„ê²© ì¡°ì ˆì„ ìœ„í•œ ì‹œê°„ ì²´í¬
 
-	public int curX, curY; // ÇöÀç Á¶ÀÛÁßÀÎ »Ñ¿äÀÇ À§Ä¡
-	public int subX, subY; // Á¶ÀÛÁßÀÎ µÎ¹øÂ° »Ñ¿äÀÇ À§Ä¡
-	public int curP1, curP2; // ÇöÀç Á¶ÀÛÁßÀÎ »Ñ¿äÀÇ Á¾·ù
-	public int startX, startY; // »õ·Î »Ñ¿ä »ı¼º½Ã À§Ä¡
-	
-	public int enemyCurX,enemyCurY;
-	public int enemySubX,enemySubY;
-	public int enemyCurP1,enemyCurP2;
+	public int gameStatus; // ê²Œì„ ìƒíƒœ 0:ì¤‘ì§€, 1: ì‹¤í–‰ì¤‘
+
+	public int myScore, enemyScore; // ë‚˜ì™€ ìƒëŒ€ë°© ì ìˆ˜
+	public int comboCount; // ì½¤ë³´íŒŒê´´ì‹œ ì¦ê°€í•˜ì—¬ ë°©í•´ë¿Œìš” ìƒì„± í›„ 0ìœ¼ë¡œ ì´ˆê¸°í™”
+
+	public int curX, curY; // í˜„ì¬ ì¡°ì‘ì¤‘ì¸ ë¿Œìš”ì˜ ìœ„ì¹˜
+	public int subX, subY; // ì¡°ì‘ì¤‘ì¸ ë‘ë²ˆì§¸ ë¿Œìš”ì˜ ìœ„ì¹˜
+	public int curP1, curP2; // í˜„ì¬ ì¡°ì‘ì¤‘ì¸ ë¿Œìš”ì˜ ì¢…ë¥˜
+	public int startX, startY; // ìƒˆë¡œ ë¿Œìš” ìƒì„±ì‹œ ìœ„ì¹˜
+
+	public int enemyCurX, enemyCurY;
+	public int enemySubX, enemySubY;
+	public int enemyCurP1, enemyCurP2;
 	private Clip clip;
 
-	public int[][] myField = { // ³» °ÔÀÓ ÇÊµå 0: ºñ¾îÀÖÀ½ 9: Ã¤¿öÁ®ÀÖÀ½(º®)
-			{9, 0, 0, 0, 0, 0, 0, 9}, // 0,0 ~ 7,0
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 9, 9, 9, 9, 9, 9, 9} // 0,13 ~ 7,13
-		};
-	
-	public int[][] enemyField = { // »ó´ë¹æ °ÔÀÓ ÇÊµå, Á¦¾î X ¿À·ÎÁö ±×¸®±â¿ë
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 0, 0, 0, 0, 0, 0, 9},
-			{9, 9, 9, 9, 9, 9, 9, 9}
-		};
-	
-	public int curShape; // ÇöÀç Á¶ÀÛÁßÀÎ »Ñ¿äÀÇ ¸ğ¾ç (4°¡Áö) ¼ø¼­´ë·Î ½Ã°è¹æÇâÀ¸·Î È¸Àü
+	public int[][] myField = { // ë‚´ ê²Œì„ í•„ë“œ 0: ë¹„ì–´ìˆìŒ 9: ì±„ì›Œì ¸ìˆìŒ(ë²½)
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, // 0,0 ~ 7,0
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 9, 9, 9, 9, 9, 9, 9 } // 0,13 ~ 7,13
+	};
+
+	public int[][] enemyField = { // ìƒëŒ€ë°© ê²Œì„ í•„ë“œ, ì œì–´ X ì˜¤ë¡œì§€ ê·¸ë¦¬ê¸°ìš©
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
+			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 9, 9, 9, 9, 9, 9, 9 } };
+
+	public int curShape; // í˜„ì¬ ì¡°ì‘ì¤‘ì¸ ë¿Œìš”ì˜ ëª¨ì–‘ (4ê°€ì§€) ìˆœì„œëŒ€ë¡œ ì‹œê³„ë°©í–¥ìœ¼ë¡œ íšŒì „
 	/**
-	 * 0: . A .           B°¡ ÄÁÆ®·ÑÀÇ ¸ŞÀÎÀÌ µÇ´Â »Ñ¿äÀÓ
-	 *    . B .
-	 *    . . .
-	 *    
-	 * 1: . . .
-	 *    . B A
-	 *    . . .
-	 *    
-	 * 2: . . .
-	 *    . B .
-	 *    . A .
-	 *    
-	 * 3: . . .
-	 *    A B .
-	 *    . . .
+	 * 0: . A . Bê°€ ì»¨íŠ¸ë¡¤ì˜ ë©”ì¸ì´ ë˜ëŠ” ë¿Œìš”ì„ . B . . . .
+	 * 
+	 * 1: . . . . B A . . .
+	 * 
+	 * 2: . . . . B . . A .
+	 * 
+	 * 3: . . . A B . . . .
 	 */
 
 	private JTextField textField;
 	public int puyoType;
 	/**
-	 * »Ñ¿äÀÇ Á¾·ù
-	 * 0: ºñ¾îÀÖÀ½
-	 * 1: »¡°£»Ñ¿ä
-	 * 2: ³ë¶õ»Ñ¿ä
-	 * 3: ÃÊ·Ï»Ñ¿ä
-	 * 4: ÆÄ¶û»Ñ¿ä
-	 * 5: º¸¶ó»Ñ¿ä
-	 * 6: ¹æÇØ»Ñ¿ä(ÄŞº¸½×¾Æ °ø°İ½Ã »ı¼º)
+	 * ë¿Œìš”ì˜ ì¢…ë¥˜ 0: ë¹„ì–´ìˆìŒ 1: ë¹¨ê°„ë¿Œìš” 2: ë…¸ë€ë¿Œìš” 3: ì´ˆë¡ë¿Œìš” 4: íŒŒë‘ë¿Œìš” 5: ë³´ë¼ë¿Œìš” 6: ë°©í•´ë¿Œìš”(ì½¤ë³´ìŒ“ì•„ ê³µê²©ì‹œ ìƒì„±)
 	 */
-	
-	/**
-	 * °ÔÀÓ È­¸éÀ» Å¬·¡½º
-	 */
-	
-	public boolean[][] visited = new boolean[14][8]; // ÆÄ±«Ã¼ÀÎÀ» À§ÇØ ¹æ¹®ÇÑ ÇÊµå ±â·Ï
-	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // Áö³ª°£ ÇÊµå ±â·ÏÀ» À§ÇÑ ¹è¿­
-	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
-	public int destroyCount; // ÆÄ±«Ã¼ÀÎÀ» À§ÇÑ ¿¬°áµÈ »Ñ¿ä Ä«¿îÆ®
-	public int checkGravity; // 0:Áß·Â X, 1: Áß·Â O, 2: Áß·ÂÀû¿ë¿Ï·á, ÆÄ±«·ÎÁ÷ ½ÇÇà
-	
-	
-	
-	
-	
 
-	
+	/**
+	 * ê²Œì„ í™”ë©´ì„ í´ë˜ìŠ¤
+	 */
+
+	public boolean[][] visited = new boolean[14][8]; // íŒŒê´´ì²´ì¸ì„ ìœ„í•´ ë°©ë¬¸í•œ í•„ë“œ ê¸°ë¡
+	public boolean[][] enemyVisited = new boolean[14][8];
+	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // ì§€ë‚˜ê°„ í•„ë“œ ê¸°ë¡ì„ ìœ„í•œ ë°°ì—´
+	public ArrayList<Integer> enemyVisitedX = new ArrayList<Integer>();
+	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
+	public ArrayList<Integer> enemyVisitedY = new ArrayList<Integer>();
+	public int destroyCount; // íŒŒê´´ì²´ì¸ì„ ìœ„í•œ ì—°ê²°ëœ ë¿Œìš” ì¹´ìš´íŠ¸
+	public int enemyDestroyCount;
+	public int checkGravity; // 0:ì¤‘ë ¥ X, 1: ì¤‘ë ¥ O, 2: ì¤‘ë ¥ì ìš©ì™„ë£Œ, íŒŒê´´ë¡œì§ ì‹¤í–‰
+	public int enemyCheckGravity;
 
 	class GameScreen extends Canvas {
 		public GameView main;
-		public Graphics gc; // ´õºí¹öÆÛ¸µ¿ë ±×·¡ÇÈ ÄÁÅØ½ºÆ®
-		public Image doubleBuffer; // ´õºí¹öÆÛ¸µ¿ë ¹é¹öÆÛ
-		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // ¹è°æÀÌ¹ÌÁö
+		public Graphics gc; // ë”ë¸”ë²„í¼ë§ìš© ê·¸ë˜í”½ ì»¨í…ìŠ¤íŠ¸
+		public Image doubleBuffer; // ë”ë¸”ë²„í¼ë§ìš© ë°±ë²„í¼
+		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // ë°°ê²½ì´ë¯¸ì§€
 		public Font font;
-		public Image[] puyoTypeImg = { // 0Àº puyoTypeµµ ºñ¾îÀÖÀ½ ÀÌ¹Ç·Î »ç¿ëÇÏÁö ¾Ê´Â´Ù
-				null,
-				new ImageIcon("src/resource/puyoRed.png").getImage(),
+		public Image[] puyoTypeImg = { // 0ì€ puyoTypeë„ ë¹„ì–´ìˆìŒ ì´ë¯€ë¡œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
+				null, new ImageIcon("src/resource/puyoRed.png").getImage(),
 				new ImageIcon("src/resource/puyoYellow.png").getImage(),
 				new ImageIcon("src/resource/puyoGreen.png").getImage(),
 				new ImageIcon("src/resource/puyoBlue.png").getImage(),
-				new ImageIcon("src/resource/puyoPurple.png").getImage()
-		};
-		
-	
+				new ImageIcon("src/resource/puyoPurple.png").getImage() };
+
 		public GameScreen(GameView gameView) {
 			this.main = gameView;
 			backGround = new ImageIcon("src/resource/backGround.png").getImage();
 			setLayout(null);
 		}
-		
-		
-		public void drawField() { // field ÀÇ »Ñ¿ä¸¦ ±×¸®´Â ÇÔ¼ö
+
+		public void drawField() { // field ì˜ ë¿Œìš”ë¥¼ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 8; j++) {
 					if (myField[i][j] > 0 && myField[i][j] < 7) {
@@ -192,56 +153,58 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				}
 			}
 		}
-		
+
 		public void drawEnemyField() {
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 8; j++) {
 					if (enemyField[i][j] > 0 && enemyField[i][j] < 7) {
-						gc.drawImage(puyoTypeImg[enemyField[i][j]], 32*12+32 * j, 32 * i, this);
+						gc.drawImage(puyoTypeImg[enemyField[i][j]], 32 * 12 + 32 * j, 32 * i, this);
 					}
 				}
 			}
 		}
-		
+
 		public void drawBackGround() {
-		if(gc!=null)
-			gc.drawImage(backGround, 0, 0, this);
+			if (gc != null)
+				gc.drawImage(backGround, 0, 0, this);
 		}
-		
-	
+
 		public void drawMyPuyo() {
-			if(gc!=null&&curP1!=0&&curP2!=0&&curX!=0&&curY!=0&&subX!=0&&subY!=0) {
+			if (gc != null && curP1 != 0 && curP2 != 0 && curX != 0 && curY != 0 && subX != 0 && subY != 0) {
 				gc.drawImage(puyoTypeImg[curP1], 32 * curX, 32 * curY, this);
 				gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 			}
 		}
-		
+
 		public void drawEnemyPuyo() {
-		
-			if(gc!=null&&enemyCurP1!=0&&enemyCurP2!=0&&enemyCurX!=0&&enemyCurY!=0&&enemySubX!=0&&enemySubY!=0) {
-				gc.drawImage(puyoTypeImg[enemyCurP1], 32*12+32 * enemyCurX, 32 * enemyCurY, this);
-				gc.drawImage(puyoTypeImg[enemyCurP2], 32*12+32 * enemySubX, 32 * enemySubY, this);
+
+			if (gc != null && enemyCurP1 != 0 && enemyCurP2 != 0 && enemyCurX != 0 && enemyCurY != 0 && enemySubX != 0
+					&& enemySubY != 0) {
+				gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
+				gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
 			}
 		}
-		
-		
+
 		public void paint(Graphics g) {
 			if (gc == null) {
 				doubleBuffer = createImage(640, 480);
-				if (doubleBuffer == null) System.out.println("¿ÀÇÁ½ºÅ©¸° ¹öÆÛ »ı¼º ½ÇÆĞ");
-				else gc = doubleBuffer.getGraphics();
+				if (doubleBuffer == null)
+					System.out.println("ì˜¤í”„ìŠ¤í¬ë¦° ë²„í¼ ìƒì„± ì‹¤íŒ¨");
+				else
+					gc = doubleBuffer.getGraphics();
 				return;
 			}
 			update(g);
 		}
-		
+
 		public void update(Graphics g) {
-			if (gc == null) return;
+			if (gc == null)
+				return;
 			doublePaint();
-			
+
 			g.drawImage(doubleBuffer, 0, 0, this);
 		}
-		
+
 		public void doublePaint() {
 			switch (gameStatus) {
 			case 0:
@@ -256,18 +219,17 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 		}
-		
-		
-			
-	} // GameScreen Å¬·¡½º ³¡
+
+	} // GameScreen í´ë˜ìŠ¤ ë
+
 	/**
 	 * Create the frame.
 	 */
-	public GameView(String userName, String ip_addr, String port_no, RoomList roomList, String roomName){
+	public GameView(String userName, String ip_addr, String port_no, RoomList roomList, String roomName) {
 		super("Puyo Puyo2!!");
 		this.roomList = roomList;
 		this.roomName = roomName;
-		this.UserName=userName;
+		this.UserName = userName;
 		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -276,16 +238,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 
-		
-		JButton btnNewButton = new JButton("Á¾ ·á");
-		btnNewButton.setFont(new Font("±¼¸²", Font.PLAIN, 14));
+		JButton btnNewButton = new JButton("ì¢… ë£Œ");
+		btnNewButton.setFont(new Font("êµ´ë¦¼", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				roomList.SendMessage(roomName, "302");
 				setVisible(false);
-				gameStatus=0;
+				gameStatus = 0;
 				mainWork.interrupt();
-				//clip.close(); À½¾Ç, ³ªÁß¿¡ È°¼ºÈ­½ÃÄÑÁÙ°Í
+				// clip.close(); ìŒì•…, ë‚˜ì¤‘ì— í™œì„±í™”ì‹œì¼œì¤„ê²ƒ
 				roomList.setVisible(true);
 			}
 		});
@@ -296,7 +257,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		gameScreen.setFocusable(true);
 		gameScreen.setBounds(10, 10, 640, 480);
 		contentPane.add(gameScreen);
-		
+
 		textField = new JTextField();
 		textField.setHorizontalAlignment(SwingConstants.CENTER);
 		textField.setText("\uB300\uAE30..");
@@ -308,14 +269,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		gameScreen.requestFocus();
 		gameScreen.repaint();
 	}
+
 	public void abc() {
 //        File bgm;
 //        AudioInputStream stream;
 //        AudioFormat format;
 //        DataLine.Info info;
 //        
-//        bgm = new File("src/resource/bgm.wav"); // »ç¿ë½Ã¿¡´Â °³º° Æú´õ·Î º¯°æÇÒ °Í
-//        // ÇöÀç ÆÄÀÏ ¾ø´Â »óÅÂ, °ÔÀÓ¿¡¼­ ÃßÃâÇØ¼­ ³ÖÀºµÚ ¼öÁ¤ÇÏ°ÚÀ½
+//        bgm = new File("src/resource/bgm.wav"); // ì‚¬ìš©ì‹œì—ëŠ” ê°œë³„ í´ë”ë¡œ ë³€ê²½í•  ê²ƒ
+//        // í˜„ì¬ íŒŒì¼ ì—†ëŠ” ìƒíƒœ, ê²Œì„ì—ì„œ ì¶”ì¶œí•´ì„œ ë„£ì€ë’¤ ìˆ˜ì •í•˜ê² ìŒ
 //        
 //        
 //        try {
@@ -324,63 +286,62 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 //               info = new DataLine.Info(Clip.class, format);
 //               clip = (Clip)AudioSystem.getLine(info);
 //               clip.open(stream);
-//              // clip.start(); //½Ã²ô·¯¿ö¼­.. ´Ù ¸¸µé°í ÁÖ¼®¸¸ Ç®¸é µÊ
+//              // clip.start(); //ì‹œë„ëŸ¬ì›Œì„œ.. ë‹¤ ë§Œë“¤ê³  ì£¼ì„ë§Œ í’€ë©´ ë¨
 //              // clip.loop(100); 
 //               
 //        } catch (Exception e) {
 //           System.out.println("err : " + e);
 //       }
-        
+
 	}
-	
+
 	public void readMessage(GameMsg cm) {
 
-			if(cm.data.equals(roomName)) {
-				setVisible(false);
-				gameStatus=0;
-				mainWork.interrupt();
-				//clip.close(); ³ªÁß¿¡ ½ÇÇà
-				roomList.setVisible(true);
-			}else if(cm.code.matches("400")) {
-				initGame();
-			}else if(cm.code.matches("501")) {
-				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby ¼ø¼­
-				 enemyCurP1=Integer.parseInt(enemyInformation[0]);
-				 enemyCurP2=Integer.parseInt(enemyInformation[1]);
-				 enemyCurX=Integer.parseInt(enemyInformation[2]);
-				 enemyCurY=Integer.parseInt(enemyInformation[3]);
-				 enemySubX=Integer.parseInt(enemyInformation[4]);
-				 enemySubY=Integer.parseInt(enemyInformation[5]);
-				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
-						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
-							enemyField[enemyCurY][enemyCurX] = enemyCurP1;
-							enemyField[enemySubY][enemySubX] = enemyCurP2;
-						}
-					}
-			}else if(cm.code.matches("502")) {
-				String enemyInformation[]=cm.data.split(" ");
-				enemyField[Integer.parseInt(enemyInformation[0])][Integer.parseInt(enemyInformation[1])]=0;
-			}else if(cm.code.matches("505")) {
-				String enemyInformation[]=cm.data.split(" ");
-				int i=Integer.parseInt(enemyInformation[0]);
-				int j=Integer.parseInt(enemyInformation[1]);
-				enemyField[i + 1][j] = enemyField[i][j];
-				enemyField[i][j] = 0;
-			}else if(cm.code.matches("506")) {
-				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby ¼ø¼­
-				  int enemyCurP1=Integer.parseInt(enemyInformation[0]);
-				  int enemyCurP2=Integer.parseInt(enemyInformation[1]);
-				  int enemyCurX=Integer.parseInt(enemyInformation[2]);
-				  int enemyCurY=Integer.parseInt(enemyInformation[3]);
-				  int enemySubX=Integer.parseInt(enemyInformation[4]);
-				  int enemySubY=Integer.parseInt(enemyInformation[5]);
-//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+		if (cm.data.equals(roomName)) {
+			setVisible(false);
+			gameStatus = 0;
+			mainWork.interrupt();
+			// clip.close(); ë‚˜ì¤‘ì— ì‹¤í–‰
+			roomList.setVisible(true);
+		} else if (cm.code.matches("400")) {
+			initGame();
+		} else if (cm.code.matches("501")) {
+			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby ìˆœì„œ
+			enemyCurP1 = Integer.parseInt(enemyInformation[0]);
+			enemyCurP2 = Integer.parseInt(enemyInformation[1]);
+			enemyCurX = Integer.parseInt(enemyInformation[2]);
+			enemyCurY = Integer.parseInt(enemyInformation[3]);
+			enemySubX = Integer.parseInt(enemyInformation[4]);
+			enemySubY = Integer.parseInt(enemyInformation[5]);
+			if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
+				if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
+					enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+					enemyField[enemySubY][enemySubX] = enemyCurP2;
+				}
+			}
+		} else if (cm.code.matches("502")) {
+			enemyCheckChainRule();
+		} else if (cm.code.matches("505")) {
+			if(enemyCheckGravity==2) {
+				enemyCheckChainRule();
+				enemyCheckGravity = 0;
+			}
+		} else if (cm.code.matches("506")) {
+			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby ìˆœì„œ
+			int enemyCurP1 = Integer.parseInt(enemyInformation[0]);
+			int enemyCurP2 = Integer.parseInt(enemyInformation[1]);
+			int enemyCurX = Integer.parseInt(enemyInformation[2]);
+			int enemyCurY = Integer.parseInt(enemyInformation[3]);
+			int enemySubX = Integer.parseInt(enemyInformation[4]);
+			int enemySubY = Integer.parseInt(enemyInformation[5]);
+//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 //						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
-							enemyField[enemyCurY][enemyCurX] = enemyCurP1;
-							enemyField[enemySubY][enemySubX] = enemyCurP2;
+			enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+			enemyField[enemySubY][enemySubX] = enemyCurP2;
 //						}
 //					}
-			}
+			enemyCheckGravity=1;
+		}
 	}
 
 	public RoomList getRoomList() {
@@ -391,100 +352,127 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return roomName;
 	}
 
+	public void initGame() { // ê²Œì„ ì‹œì‘ì‹œ ë³€ìˆ˜ ì´ˆê¸° ì„¤ì •
 
-	
-	public void initGame() { // °ÔÀÓ ½ÃÀÛ½Ã º¯¼ö ÃÊ±â ¼³Á¤
-		
 		myScore = 0;
 		enemyScore = 0;
-		startX = 4; // °¡·ÁÁö´Â ºÎºĞ
-		startY = 1; // °¡·ÁÁö´Â ºÎºĞ
+		startX = 4; // ê°€ë ¤ì§€ëŠ” ë¶€ë¶„
+		startY = 1; // ê°€ë ¤ì§€ëŠ” ë¶€ë¶„
 		comboCount = 0;
-		delay = 17; // 17 / 1000 = 58ÇÁ·¹ÀÓ
-		puyoDelay=2000;
+		delay = 17; // 17 / 1000 = 58í”„ë ˆì„
+		puyoDelay = 2000;
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
 		mainWork.start();
-		//abc();
-		textField.setText("°ÔÀÓ ½ÃÀÛ!!");
+		// abc();
+		textField.setText("ê²Œì„ ì‹œì‘!!");
 		destroyCount = 0;
+		enemyDestroyCount=0;
 		checkGravity = 0;
+		enemyCheckGravity=0;
 		visitedX.clear();
 		visitedY.clear();
 	}
-	
+
 	public void run() {
 		try {
 			Timer timer = new Timer();
 			TimerTask task = new TimerTask() {
 				public void run() {
-					puyoDown(); // ¸¸¾à Åë½Å ¿¡·¯°¡ ¹ß»ıÇÏ¸é ¿øÀÎÀÎÁö È®ÀÎ?
+					puyoDown(); // ë§Œì•½ í†µì‹  ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ì›ì¸ì¸ì§€ í™•ì¸?
 				}
 			};
-			timer.scheduleAtFixedRate(task, 1000, puyoDelay); //µÎ¹øÂ° ÆÄ¶ó¹ÌÅÍ´Â ¾ğÁ¦ ½ÃÀÛÇÒÁö °áÁ¤ÇÏ´Â ÇÔ¼ö, puyodelay·Î °ÉÀ» ÇÊ¿ä°¡ ¾øÀ½
-			
+			timer.scheduleAtFixedRate(task, 1000, puyoDelay); // ë‘ë²ˆì§¸ íŒŒë¼ë¯¸í„°ëŠ” ì–¸ì œ ì‹œì‘í• ì§€ ê²°ì •í•˜ëŠ” í•¨ìˆ˜, puyodelayë¡œ ê±¸ì„ í•„ìš”ê°€ ì—†ìŒ
+
 			Timer gravityTimer = new Timer();
 			TimerTask gravityTask = new TimerTask() {
 				public void run() {
 					if (checkGravity == 1) {
 						checkGravity = 0;
-						
+
 						for (int i = 11; i >= 0; i--) {
 							for (int j = 1; j < 7; j++) {
-								if (myField[i + 1][j] == 0&&gameStatus==1) {
-									myField[i + 1][j] = myField[i][j];
-									if(myField[i][j]>0) {
-										roomList.SendMessage(i+" "+j,"505");
+								if (myField[i + 1][j] == 0 && gameStatus == 1) {
+									if (myField[i][j] > 0) {
+										myField[i + 1][j] = myField[i][j];
+										myField[i][j] = 0;
 									}
-									myField[i][j] = 0;
 									checkGravity = 1;
 								}
 							}
 						}
-						
-						if (checkGravity == 0) checkGravity = 2; // Áß·Â ¿µÇâÀ» ´Ù ¹ŞÀ¸¸é Ã¼ÀÎ ·ê ½ÇÇà
+
+						if (checkGravity == 0)
+							checkGravity = 2; // ì¤‘ë ¥ ì˜í–¥ì„ ë‹¤ ë°›ìœ¼ë©´ ì²´ì¸ ë£° ì‹¤í–‰
 					}
 				}
 			};
-			gravityTimer.scheduleAtFixedRate(gravityTask, puyoDelay, 150);
-			
-			while(loop) {
+				gravityTimer.scheduleAtFixedRate(gravityTask, puyoDelay, 150);
 				
+				Timer enemyGravityTimer = new Timer();
+				TimerTask enemyGravityTask = new TimerTask() {
+					public void run() {
+						if (enemyCheckGravity == 1) {
+							enemyCheckGravity = 0;
+
+							for (int i = 11; i >= 0; i--) {
+								for (int j = 1; j < 7; j++) {
+									if (enemyField[i + 1][j] == 0 && gameStatus == 1) {
+										if (enemyField[i][j] > 0) {
+											enemyField[i + 1][j] = enemyField[i][j];
+											enemyField[i][j] = 0;
+										}
+										enemyCheckGravity = 1;
+									}
+								}
+							}
+
+							if (enemyCheckGravity == 0)
+								enemyCheckGravity = 2; // ì¤‘ë ¥ ì˜í–¥ì„ ë‹¤ ë°›ìœ¼ë©´ ì²´ì¸ ë£° ì‹¤í–‰
+						}
+					}
+			};
+			enemyGravityTimer.scheduleAtFixedRate(enemyGravityTask, puyoDelay, 150);
+			
+
+			while (loop) {
+
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
-				process(); // ÀüÃ¼ ÇÁ·Î¼¼½º Ã³¸®
-				keyProcess(); // Å° ÀÔ·Â ¹Ş¾Æ¼­ Ã³¸®
-				
-				if (System.currentTimeMillis() - preTime < delay) { // ½Ã°£ µô·¹ÀÌ ¸ÂÃß´Â ÀÛ¾÷, 10ÁÖÂ÷ ÀÚ¹Ù°ÔÀÓ¿¡¼­ °¡Á®¿È
+				process(); // ì „ì²´ í”„ë¡œì„¸ìŠ¤ ì²˜ë¦¬
+				keyProcess(); // í‚¤ ì…ë ¥ ë°›ì•„ì„œ ì²˜ë¦¬
+
+				if (System.currentTimeMillis() - preTime < delay) { // ì‹œê°„ ë”œë ˆì´ ë§ì¶”ëŠ” ì‘ì—…, 10ì£¼ì°¨ ìë°”ê²Œì„ì—ì„œ ê°€ì ¸ì˜´
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
 				}
-				
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
 
-	public void process() { // °¢Á¾ ·ÎÁ÷ Ã³¸®
-		switch(gameStatus) {
+	public void process() { // ê°ì¢… ë¡œì§ ì²˜ë¦¬
+		switch (gameStatus) {
 		case 0:
 			break;
 		case 1:
 			if (checkDropDone()) {
+				roomList.SendMessage("", "502");
+				roomList.SendMessage("", "505");
 				dropPuyo();
 				checkChainRule();
-			if (checkGravity == 2) {
-				checkChainRule();
-				checkGravity = 0;
+				if (checkGravity == 2) {
+					checkChainRule();
+					checkGravity = 0;
+				}
 			}
 		}
 	}
-	}
-	
+
 	public boolean checkEnemyDropDone() {
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 				enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -493,215 +481,287 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 		return false;
 	}
-	
-	public boolean checkDropDone() { // ³«ÇÏÁßÀÌ´ø »Ñ¿ä°¡ ¸ØÃè´ÂÁö È®ÀÎ(¹Ù´Ú¿¡ ´ê¾Ò´ÂÁö)
-		
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+
+	public boolean checkDropDone() { // ë‚™í•˜ì¤‘ì´ë˜ ë¿Œìš”ê°€ ë©ˆì·„ëŠ”ì§€ í™•ì¸(ë°”ë‹¥ì— ë‹¿ì•˜ëŠ”ì§€)
+
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 				enemyField[enemySubY][enemySubX] = enemyCurP2;
 			}
 		}
-		
+
 		if (myField[curY + 1][curX] != 0 || curY + 1 == subY) {
 			if (myField[subY + 1][subX] != 0 || subY + 1 == curY) {
 				myField[curY][curX] = curP1;
 				myField[subY][subX] = curP2;
-				if(gameStatus==1)
-					roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+				if (gameStatus == 1)
+					roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY,
+							"501");
 				return true;
 			}
 		}
-		
-			
+
 		return false;
 	}
-	
-	public void checkChainRule() { // ¸ğµç ÇÊµå¸¦ È®ÀÎÇÏ¸ç ¹æ¹®ÇÏÁö ¾Ê°í, »Ñ¿ä°¡ ÀÖ´Â°æ¿ì ÆÄ±«·ÎÁ÷½ÇÇà
-		// °è¼ÓÇØ¼­ µ¹¸®¸é ¿À·ù¹ß»ı °¡´É, »Ñ¿ä°¡ ³«ÇÏµÈ(Á¶ÀÛÇØ¼­ÀÌ´ø, ÆÄ±«µÇ¼­ÀÌ´ø) °æ¿ì¿¡¸¸ ½ÇÇà
+
+	public void checkChainRule() { // ëª¨ë“  í•„ë“œë¥¼ í™•ì¸í•˜ë©° ë°©ë¬¸í•˜ì§€ ì•Šê³ , ë¿Œìš”ê°€ ìˆëŠ”ê²½ìš° íŒŒê´´ë¡œì§ì‹¤í–‰
+		// ê³„ì†í•´ì„œ ëŒë¦¬ë©´ ì˜¤ë¥˜ë°œìƒ ê°€ëŠ¥, ë¿Œìš”ê°€ ë‚™í•˜ëœ(ì¡°ì‘í•´ì„œì´ë˜, íŒŒê´´ë˜ì„œì´ë˜) ê²½ìš°ì—ë§Œ ì‹¤í–‰
 		clearVisitedField();
 		visitedX.clear();
 		visitedY.clear();
-		
+
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				if (myField[i][j] != 0 && !visited[i][j]) {
 					destroyCount = 0;
 					if (puyoDestroy(i, j, myField[i][j])) {
-						if (destroyCount > 3) realDestroyPuyo();
+						if (destroyCount > 3)
+							realDestroyPuyo();
 						visitedX.clear();
 						visitedY.clear();
 					}
-				} // ¹æ¹®, »Ñ¿äÁ¸ÀçÈ®ÀÎ
-			} // y for ¹®
-		} // x for¹®
+				} // ë°©ë¬¸, ë¿Œìš”ì¡´ì¬í™•ì¸
+			} // y for ë¬¸
+		} // x forë¬¸
 	}
-	
-	public boolean puyoDestroy(int x, int y, int puyo_type) { // ÆÄ±«·ÎÁ÷½ÇÇà, ÀÎÁ¢ »Ñ¿äµéÀ» È®ÀÎÇÏ¸ç ÀÚ½Å°ú µ¿ÀÏÇÏ¸é Ä«¿îÆ® Áõ°¡
-		
+
+	public void enemyCheckChainRule() {
+		enemyClearVisitedField();
+		enemyVisitedX.clear();
+		enemyVisitedY.clear();
+
+		for (int i = 0; i < 13; i++) {
+			for (int j = 1; j < 7; j++) {
+				if (enemyField[i][j] != 0 && !enemyVisited[i][j]) {
+					enemyDestroyCount = 0;
+					if (enemyPuyoDestroy(i, j, enemyField[i][j])) {
+						if (enemyDestroyCount > 3)
+							enemyRealDestroyPuyo();
+						enemyVisitedX.clear();
+						enemyVisitedY.clear();
+					}
+				} // ë°©ë¬¸, ë¿Œìš”ì¡´ì¬í™•ì¸
+			} // y for ë¬¸
+		} // x forë¬¸
+	}
+
+	public boolean puyoDestroy(int x, int y, int puyo_type) { // íŒŒê´´ë¡œì§ì‹¤í–‰, ì¸ì ‘ ë¿Œìš”ë“¤ì„ í™•ì¸í•˜ë©° ìì‹ ê³¼ ë™ì¼í•˜ë©´ ì¹´ìš´íŠ¸ ì¦ê°€
+
 		visited[x][y] = true;
 		destroyCount++;
-		
+
 		visitedX.add(x);
 		visitedY.add(y);
-		if (!visited[x+1][y] && myField[x+1][y] == puyo_type) {
-			if (puyoDestroy(x+1, y, puyo_type));
+		if (!visited[x + 1][y] && myField[x + 1][y] == puyo_type) {
+			if (puyoDestroy(x + 1, y, puyo_type))
+				;
 		}
-		if (!visited[x][y+1] && myField[x][y+1] == puyo_type) {
-			if (puyoDestroy(x, y+1, puyo_type));
+		if (!visited[x][y + 1] && myField[x][y + 1] == puyo_type) {
+			if (puyoDestroy(x, y + 1, puyo_type))
+				;
 		}
-		if (x != 0 && !visited[x-1][y] && myField[x-1][y] == puyo_type) {
-			if (puyoDestroy(x-1, y, puyo_type));
+		if (x != 0 && !visited[x - 1][y] && myField[x - 1][y] == puyo_type) {
+			if (puyoDestroy(x - 1, y, puyo_type))
+				;
 		}
-		if (!visited[x][y-1] && myField[x][y-1] == puyo_type) {
-			if (puyoDestroy(x,y-1, puyo_type));
+		if (!visited[x][y - 1] && myField[x][y - 1] == puyo_type) {
+			if (puyoDestroy(x, y - 1, puyo_type))
+				;
 		}
 		return true;
 	}
-	
-	public void realDestroyPuyo() { // ½ÇÁ¦ »Ñ¿äµéÀ» ÇÊµå¿¡¼­ Á¦°Å, À§¿¡ ½×ÀÎ »Ñ¿äµéÀ» µå¶ø??
+
+	public boolean enemyPuyoDestroy(int x, int y, int puyo_type) { // íŒŒê´´ë¡œì§ì‹¤í–‰, ì¸ì ‘ ë¿Œìš”ë“¤ì„ í™•ì¸í•˜ë©° ìì‹ ê³¼ ë™ì¼í•˜ë©´ ì¹´ìš´íŠ¸ ì¦ê°€
+
+		enemyVisited[x][y] = true;
+		enemyDestroyCount++;
 		
+		enemyVisitedX.add(x);
+		enemyVisitedY.add(y);
+		if (!enemyVisited[x + 1][y] && enemyField[x + 1][y] == puyo_type) {
+			if (enemyPuyoDestroy(x + 1, y, puyo_type))
+				;
+		}
+		if (!enemyVisited[x][y + 1] && enemyField[x][y + 1] == puyo_type) {
+			if (enemyPuyoDestroy(x, y + 1, puyo_type))
+				;
+		}
+		if (x != 0 && !enemyVisited[x - 1][y] && enemyField[x - 1][y] == puyo_type) {
+			if (enemyPuyoDestroy(x - 1, y, puyo_type))
+				;
+		}
+		if (!enemyVisited[x][y - 1] && enemyField[x][y - 1] == puyo_type) {
+			if (enemyPuyoDestroy(x, y - 1, puyo_type))
+				;
+		}
+		return true;
+	}
+
+	public void realDestroyPuyo() { // ì‹¤ì œ ë¿Œìš”ë“¤ì„ í•„ë“œì—ì„œ ì œê±°, ìœ„ì— ìŒ“ì¸ ë¿Œìš”ë“¤ì„ ë“œë??
+
 		for (int i = 0; i < visitedX.size(); i++) {
 			myField[visitedX.get(i)][visitedY.get(i)] = 0;
-			roomList.SendMessage(visitedX.get(i)+" "+visitedY.get(i), "502");
 		}
-		
+
 		myScore += destroyCount * 10;
-		//System.out.println(String.format("my score : %d", myScore)); // µğ¹ö±ë¿ë
+		// System.out.println(String.format("my score : %d", myScore)); // ë””ë²„ê¹…ìš©
 		clearVisitedField();
 		checkGravity = 1;
 	}
 	
-	public void clearVisitedField() { // ¹æ¹®»ç½Ç ÃÊ±âÈ­
-		for (int i = 0 ; i < 13; i++) {
+	public void enemyRealDestroyPuyo() { // ì‹¤ì œ ë¿Œìš”ë“¤ì„ í•„ë“œì—ì„œ ì œê±°, ìœ„ì— ìŒ“ì¸ ë¿Œìš”ë“¤ì„ ë“œë??
+
+		for (int i = 0; i < enemyVisitedX.size(); i++) {
+			enemyField[enemyVisitedX.get(i)][enemyVisitedY.get(i)] = 0;
+		}
+		// System.out.println(String.format("my score : %d", myScore)); // ë””ë²„ê¹…ìš©
+		enemyClearVisitedField();
+		enemyCheckGravity = 1;
+	}
+
+	public void clearVisitedField() { // ë°©ë¬¸ì‚¬ì‹¤ ì´ˆê¸°í™”
+		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				visited[i][j] = false;
 			}
 		}
 	}
-	
-	public void gravity() { // ¾Æ·¡¿¡ ÀÖ´Â »Ñ¿ä°¡ ÆÄ±«µÉ ½Ã À§¿¡ ÀÖ´Â »Ñ¿äµéÀº ºñ¾îÀÖ´Â °ø°£À¸·Î ³»·Á¿È
-		
+
+	public void enemyClearVisitedField() { // ë°©ë¬¸ì‚¬ì‹¤ ì´ˆê¸°í™”
+		for (int i = 0; i < 13; i++) {
+			for (int j = 1; j < 7; j++) {
+				enemyVisited[i][j] = false;
+			}
+		}
 	}
-	
+
+	public void gravity() { // ì•„ë˜ì— ìˆëŠ” ë¿Œìš”ê°€ íŒŒê´´ë  ì‹œ ìœ„ì— ìˆëŠ” ë¿Œìš”ë“¤ì€ ë¹„ì–´ìˆëŠ” ê³µê°„ìœ¼ë¡œ ë‚´ë ¤ì˜´
+
+	}
+
 	public void cutConnect() {
 		myField[curY][curX] = curP1;
 		myField[subY][subX] = curP2;
 		checkGravity = 1;
 		dropPuyo();
 	}
-	
-	public void enemyCurConnect() {
+
+	public void enemyCutConnect() {
 		enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 		enemyField[enemySubY][enemySubX] = enemyCurP2;
+		enemyCheckGravity=1;
 	}
-	
 
 	public void keyPressed(KeyEvent e) {
-		
-		switch(e.getKeyCode()) {
+
+		switch (e.getKeyCode()) {
 		case KeyEvent.VK_UP:
-			keybuff|=UP_PRESSED;
+			keybuff |= UP_PRESSED;
 			break;
 		case KeyEvent.VK_DOWN:
-			keybuff|=DOWN_PRESSED;
-			puyoDelay=300;
+			keybuff |= DOWN_PRESSED;
+			puyoDelay = 300;
 			break;
 		case KeyEvent.VK_LEFT:
-			keybuff|=LEFT_PRESSED;
+			keybuff |= LEFT_PRESSED;
 			break;
 		case KeyEvent.VK_RIGHT:
-			keybuff|=RIGHT_PRESSED;
+			keybuff |= RIGHT_PRESSED;
 			break;
 		default:
 			break;
 		}
 	}
-	
+
 	public void keyReleased(KeyEvent e) {
-		switch(e.getKeyCode()){
+		switch (e.getKeyCode()) {
 		case KeyEvent.VK_UP:
-			keybuff&=~UP_PRESSED;
+			keybuff &= ~UP_PRESSED;
 			break;
 		case KeyEvent.VK_DOWN:
-			keybuff&=~DOWN_PRESSED;
-			puyoDelay=1000;
+			keybuff &= ~DOWN_PRESSED;
+			puyoDelay = 1000;
 			break;
 		case KeyEvent.VK_LEFT:
-			keybuff&=~LEFT_PRESSED;
+			keybuff &= ~LEFT_PRESSED;
 			break;
 		case KeyEvent.VK_RIGHT:
-			keybuff&=~RIGHT_PRESSED;
+			keybuff &= ~RIGHT_PRESSED;
 			break;
 		default:
 			break;
 		}
 	}
-	
-	public void keyTyped(KeyEvent e) {}
+
+	public void keyTyped(KeyEvent e) {
+	}
 
 	public void puyoDown() {
-		
-		switch(curShape) {
+
+		switch (curShape) {
 		case 0:
-			if (myField[curY + 1][curX] == 0) { curY++; subY++; }
+			if (myField[curY + 1][curX] == 0) {
+				curY++;
+				subY++;
+			}
 			break;
 		case 1:
 			if (myField[curY + 1][curX] == 0 && myField[subY + 1][subX] == 0) {
 				curY++;
 				subY++;
-			} else { // ÇÑÂÊÀÌ ²÷±â¸é ³ª¸ÓÁö ÇÑÂÊÀº ÀÚÀ¯³«ÇÏ
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY,"506");
+			} else { // í•œìª½ì´ ëŠê¸°ë©´ ë‚˜ë¨¸ì§€ í•œìª½ì€ ììœ ë‚™í•˜
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "506");
 				cutConnect();
 			}
 			break;
 		case 2:
-			if (myField[curY + 2][curX] == 0) { curY++; subY++; }
+			if (myField[curY + 2][curX] == 0) {
+				curY++;
+				subY++;
+			}
 			break;
 		case 3:
 			if (myField[curY + 1][curX] == 0 && myField[subY + 1][subX] == 0) {
 				curY++;
 				subY++;
 			} else {
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY,"506");
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "506");
 				cutConnect();
 			}
 			break;
 		}
-		if(gameStatus==1)
-			roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+		if (gameStatus == 1)
+			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 	}
-	
-	
-	
-	public void checkGameOver() { // °ÔÀÓ ¿À¹ö Ã³¸®(»Ñ¿ä°¡ ÃµÀåÀ» Ä§)
-		
-		//gameStatus = 0;
-		//loop = false;
+
+	public void checkGameOver() { // ê²Œì„ ì˜¤ë²„ ì²˜ë¦¬(ë¿Œìš”ê°€ ì²œì¥ì„ ì¹¨)
+
+		// gameStatus = 0;
+		// loop = false;
 	}
-	
-	//private void createPuyo(Graphics g) { // ´ÙÀ½ »Ñ¿ä »ı¼º(¾ÆÁ÷ ´ë±â»óÅÂ)
-	// ³ªÁß¿¡ ±¸Çö ÀÏ´Ü ¾Æ·¡°É·Î ¹Ù·Î ½ÃÀÛÀ§Ä¡¿¡ »ı¼ºÇÏ±â
-	//} 
-	
-	public void dropPuyo() { // ´ÙÀ½ »Ñ¿ä µå¶ø(´ë±â»óÅÂ¿¡¼­ ²¨³»¼­ ³«ÇÏ)
-		curP1 = (int)(Math.random() * 5 + 1);
-		curP2 = (int)(Math.random() * 5 + 1);
+
+	// private void createPuyo(Graphics g) { // ë‹¤ìŒ ë¿Œìš” ìƒì„±(ì•„ì§ ëŒ€ê¸°ìƒíƒœ)
+	// ë‚˜ì¤‘ì— êµ¬í˜„ ì¼ë‹¨ ì•„ë˜ê±¸ë¡œ ë°”ë¡œ ì‹œì‘ìœ„ì¹˜ì— ìƒì„±í•˜ê¸°
+	// }
+
+	public void dropPuyo() { // ë‹¤ìŒ ë¿Œìš” ë“œë(ëŒ€ê¸°ìƒíƒœì—ì„œ êº¼ë‚´ì„œ ë‚™í•˜)
+		curP1 = (int) (Math.random() * 5 + 1);
+		curP2 = (int) (Math.random() * 5 + 1);
 		curX = startX;
 		curY = startY;
 		subX = startX;
 		subY = startY - 1;
 		curShape = 0;
 	}
-	
-	public void removePuyo(int x, int y) { // »Ñ¿ä Á¦°Å
+
+	public void removePuyo(int x, int y) { // ë¿Œìš” ì œê±°
 		myField[x][y] = 0;
 		comboCount++;
 	}
-	
-	
+
 	public void turnPuyo() {
-		switch(curShape) {
+		switch (curShape) {
 		case 0:
 			if (myField[curY][curX + 1] == 0) {
 				curShape++;
@@ -731,16 +791,16 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 			break;
 		}
-		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+
+		roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 	}
-	
-	
-	public void keyProcess() { // »Ñ¿ä ÀÌµ¿
-		switch(gameStatus) {
+
+	public void keyProcess() { // ë¿Œìš” ì´ë™
+		switch (gameStatus) {
 		case 0:
 			break;
 		case 1:
-			switch(keybuff) {
+			switch (keybuff) {
 			case 0:
 				break;
 			case UP_PRESSED:
@@ -750,49 +810,71 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				puyoDown();
 				break;
 			case LEFT_PRESSED:
-				switch(curShape) {
+				switch (curShape) {
 				case 0:
-					if (myField[curY][curX - 1] == 0 && myField[curY - 1][curX - 1] == 0) { curX--; subX--; }
+					if (myField[curY][curX - 1] == 0 && myField[curY - 1][curX - 1] == 0) {
+						curX--;
+						subX--;
+					}
 					break;
 				case 1:
-					if (myField[curY][curX - 1] == 0) { curX--; subX--; }
+					if (myField[curY][curX - 1] == 0) {
+						curX--;
+						subX--;
+					}
 					break;
 				case 2:
-					if (myField[curY][curX - 1] == 0 && myField[curY + 1][curX - 1] == 0) { curX--; subX--; }
+					if (myField[curY][curX - 1] == 0 && myField[curY + 1][curX - 1] == 0) {
+						curX--;
+						subX--;
+					}
 					break;
 				case 3:
-					if (myField[curY][curX - 2] == 0) { curX--; subX--; }
+					if (myField[curY][curX - 2] == 0) {
+						curX--;
+						subX--;
+					}
 					break;
 				}
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 				break;
 			case RIGHT_PRESSED:
-				switch(curShape) {
+				switch (curShape) {
 				case 0:
-					if (myField[curY][curX + 1] == 0 && myField[curY - 1][curX + 1] == 0) { curX++; subX++; }
+					if (myField[curY][curX + 1] == 0 && myField[curY - 1][curX + 1] == 0) {
+						curX++;
+						subX++;
+					}
 					break;
 				case 1:
-					if (myField[curY][curX + 2] == 0) { curX++; subX++; }
-					break; 
+					if (myField[curY][curX + 2] == 0) {
+						curX++;
+						subX++;
+					}
+					break;
 				case 2:
-					if (myField[curY][curX + 1] == 0 && myField[curY + 1][curX + 1] == 0) { curX++; subX++; }
+					if (myField[curY][curX + 1] == 0 && myField[curY + 1][curX + 1] == 0) {
+						curX++;
+						subX++;
+					}
 					break;
 				case 3:
-					if (myField[curY][curX + 1] == 0) { curX++; subX++; }
+					if (myField[curY][curX + 1] == 0) {
+						curX++;
+						subX++;
+					}
 					break;
 				}
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 				break;
 			}
 			if (!Thread.currentThread().isInterrupted()) {
-				try { // Å°°¡ ³Ê¹« ºü¸£°Ô ¸ÔÀ¸¸é ¾ÈµÊ µô·¹ÀÌ
-					Thread.sleep(80); // ¾à°£ 0.05ÃÊ´Â ³Ê¹« ÂªÀº ´À³¦?
+				try { // í‚¤ê°€ ë„ˆë¬´ ë¹ ë¥´ê²Œ ë¨¹ìœ¼ë©´ ì•ˆë¨ ë”œë ˆì´
+					Thread.sleep(80); // ì•½ê°„ 0.05ì´ˆëŠ” ë„ˆë¬´ ì§§ì€ ëŠë‚Œ?
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
 			}
 		}
 	}
-} // ÀüÃ¼ Å¬·¡½º ³¡
-
-
+} // ì „ì²´ í´ë˜ìŠ¤ ë
