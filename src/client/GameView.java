@@ -368,18 +368,18 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				enemyField[i][j] = 0;
 			}else if(cm.code.matches("506")) {
 				String enemyInformation[]=cm.data.split(" "); // p1 p2 curx cury subx suby 순서
-				 int enemyCurP1=Integer.parseInt(enemyInformation[0]);
-				 int enemyCurP2=Integer.parseInt(enemyInformation[1]);
-				 int enemyCurX=Integer.parseInt(enemyInformation[2]);
-				 int enemyCurY=Integer.parseInt(enemyInformation[3]);
-				 int enemySubX=Integer.parseInt(enemyInformation[4]);
-				 int enemySubY=Integer.parseInt(enemyInformation[5]);
-				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
-						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
+				  int enemyCurP1=Integer.parseInt(enemyInformation[0]);
+				  int enemyCurP2=Integer.parseInt(enemyInformation[1]);
+				  int enemyCurX=Integer.parseInt(enemyInformation[2]);
+				  int enemyCurY=Integer.parseInt(enemyInformation[3]);
+				  int enemySubX=Integer.parseInt(enemyInformation[4]);
+				  int enemySubY=Integer.parseInt(enemyInformation[5]);
+//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+//						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 							enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 							enemyField[enemySubY][enemySubX] = enemyCurP2;
-						}
-					}
+//						}
+//					}
 			}
 	}
 
@@ -587,9 +587,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public void cutConnect() {
 		myField[curY][curX] = curP1;
 		myField[subY][subX] = curP2;
-		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "506");
 		checkGravity = 1;
 		dropPuyo();
+	}
+	
+	public void enemyCurConnect() {
+		enemyField[enemyCurY][enemyCurX] = enemyCurP1;
+		enemyField[enemySubY][enemySubX] = enemyCurP2;
 	}
 	
 
@@ -647,6 +651,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				curY++;
 				subY++;
 			} else { // 한쪽이 끊기면 나머지 한쪽은 자유낙하
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY,"506");
 				cutConnect();
 			}
 			break;
@@ -658,12 +663,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				curY++;
 				subY++;
 			} else {
+				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY,"506");
 				cutConnect();
 			}
 			break;
 		}
 		if(gameStatus==1)
-		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
+			roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 	}
 	
 	
