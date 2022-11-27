@@ -731,6 +731,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 			break;
 		}
+		roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 	}
 	
 	
@@ -744,11 +745,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			case UP_PRESSED:
 				turnPuyo();
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			case DOWN_PRESSED:
 				puyoDown();
-				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			case LEFT_PRESSED:
 				switch(curShape) {
@@ -785,10 +784,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				roomList.SendMessage(curP1+" "+curP2+" "+curX+" "+curY+" "+subX+" "+subY, "501");
 				break;
 			}
-			try { // 키가 너무 빠르게 먹으면 안됨 딜레이
-				Thread.sleep(60); // 약간 0.05초는 너무 짧은 느낌?
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			if (!Thread.currentThread().isInterrupted()) {
+				try { // 키가 너무 빠르게 먹으면 안됨 딜레이
+					Thread.sleep(80); // 약간 0.05초는 너무 짧은 느낌?
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
 			}
 		}
 	}
