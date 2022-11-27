@@ -340,6 +340,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyField[enemySubY][enemySubX] = enemyCurP2;
 //						}
 //					}
+			enemyCheckGravity=1;
 		}
 	}
 
@@ -790,6 +791,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 			break;
 		}
+		roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 	}
 
 	public void keyProcess() { // ª—ø‰ ¿Ãµø
@@ -802,11 +804,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			case UP_PRESSED:
 				turnPuyo();
-				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 				break;
 			case DOWN_PRESSED:
 				puyoDown();
-				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 				break;
 			case LEFT_PRESSED:
 				switch (curShape) {
