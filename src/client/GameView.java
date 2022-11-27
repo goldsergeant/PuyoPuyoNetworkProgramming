@@ -51,33 +51,33 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public GameScreen gameScreen;
 	Thread mainWork;
 
-	private final static int UP_PRESSED = 0x001; // Å° °ª
+	private final static int UP_PRESSED = 0x001; // í‚¤ ê°’
 	private final static int DOWN_PRESSED = 0x002;
 	private final static int LEFT_PRESSED = 0x004;
 	private final static int RIGHT_PRESSED = 0x008;
-	public int keybuff; // Å° ¹öÆÛ°ª
+	public int keybuff; // í‚¤ ë²„í¼ê°’
 
 	public boolean loop = true;
-	public int delay; // ÇÁ·¹ÀÓ Á¶Àı µô·¹ÀÌ 1/1000 ÃÊ ´ÜÀ§
+	public int delay; // í”„ë ˆì„ ì¡°ì ˆ ë”œë ˆì´ 1/1000 ì´ˆ ë‹¨ìœ„
 	public long puyoDelay;
-	public long preTime; // loop °£°İ Á¶ÀıÀ» À§ÇÑ ½Ã°£ Ã¼Å©
+	public long preTime; // loop ê°„ê²© ì¡°ì ˆì„ ìœ„í•œ ì‹œê°„ ì²´í¬
 
-	public int gameStatus; // °ÔÀÓ »óÅÂ 0:ÁßÁö, 1: ½ÇÇàÁß
+	public int gameStatus; // ê²Œì„ ìƒíƒœ 0:ì¤‘ì§€, 1: ì‹¤í–‰ì¤‘
 
-	public int myScore, enemyScore; // ³ª¿Í »ó´ë¹æ Á¡¼ö
-	public int comboCount; // ÄŞº¸ÆÄ±«½Ã Áõ°¡ÇÏ¿© ¹æÇØ»Ñ¿ä »ı¼º ÈÄ 0À¸·Î ÃÊ±âÈ­
+	public int myScore, enemyScore; // ë‚˜ì™€ ìƒëŒ€ë°© ì ìˆ˜
+	public int comboCount; // ì½¤ë³´íŒŒê´´ì‹œ ì¦ê°€í•˜ì—¬ ë°©í•´ë¿Œìš” ìƒì„± í›„ 0ìœ¼ë¡œ ì´ˆê¸°í™”
 
-	public int curX, curY; // ÇöÀç Á¶ÀÛÁßÀÎ »Ñ¿äÀÇ À§Ä¡
-	public int subX, subY; // Á¶ÀÛÁßÀÎ µÎ¹øÂ° »Ñ¿äÀÇ À§Ä¡
-	public int curP1, curP2; // ÇöÀç Á¶ÀÛÁßÀÎ »Ñ¿äÀÇ Á¾·ù
-	public int startX, startY; // »õ·Î »Ñ¿ä »ı¼º½Ã À§Ä¡
+	public int curX, curY; // í˜„ì¬ ì¡°ì‘ì¤‘ì¸ ë¿Œìš”ì˜ ìœ„ì¹˜
+	public int subX, subY; // ì¡°ì‘ì¤‘ì¸ ë‘ë²ˆì§¸ ë¿Œìš”ì˜ ìœ„ì¹˜
+	public int curP1, curP2; // í˜„ì¬ ì¡°ì‘ì¤‘ì¸ ë¿Œìš”ì˜ ì¢…ë¥˜
+	public int startX, startY; // ìƒˆë¡œ ë¿Œìš” ìƒì„±ì‹œ ìœ„ì¹˜
 
 	public int enemyCurX, enemyCurY;
 	public int enemySubX, enemySubY;
 	public int enemyCurP1, enemyCurP2;
 	private Clip clip;
 
-	public int[][] myField = { // ³» °ÔÀÓ ÇÊµå 0: ºñ¾îÀÖÀ½ 9: Ã¤¿öÁ®ÀÖÀ½(º®)
+	public int[][] myField = { // ë‚´ ê²Œì„ í•„ë“œ 0: ë¹„ì–´ìˆìŒ 9: ì±„ì›Œì ¸ìˆìŒ(ë²½)
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, // 0,0 ~ 7,0
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
@@ -86,16 +86,16 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			{ 9, 9, 9, 9, 9, 9, 9, 9 } // 0,13 ~ 7,13
 	};
 
-	public int[][] enemyField = { // »ó´ë¹æ °ÔÀÓ ÇÊµå, Á¦¾î X ¿À·ÎÁö ±×¸®±â¿ë
+	public int[][] enemyField = { // ìƒëŒ€ë°© ê²Œì„ í•„ë“œ, ì œì–´ X ì˜¤ë¡œì§€ ê·¸ë¦¬ê¸°ìš©
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 9, 9, 9, 9, 9, 9, 9 } };
 
-	public int curShape; // ÇöÀç Á¶ÀÛÁßÀÎ »Ñ¿äÀÇ ¸ğ¾ç (4°¡Áö) ¼ø¼­´ë·Î ½Ã°è¹æÇâÀ¸·Î È¸Àü
+	public int curShape; // í˜„ì¬ ì¡°ì‘ì¤‘ì¸ ë¿Œìš”ì˜ ëª¨ì–‘ (4ê°€ì§€) ìˆœì„œëŒ€ë¡œ ì‹œê³„ë°©í–¥ìœ¼ë¡œ íšŒì „
 	/**
-	 * 0: . A . B°¡ ÄÁÆ®·ÑÀÇ ¸ŞÀÎÀÌ µÇ´Â »Ñ¿äÀÓ . B . . . .
+	 * 0: . A . Bê°€ ì»¨íŠ¸ë¡¤ì˜ ë©”ì¸ì´ ë˜ëŠ” ë¿Œìš”ì„ . B . . . .
 	 * 
 	 * 1: . . . . B A . . .
 	 * 
@@ -107,31 +107,31 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	private JTextField textField;
 	public int puyoType;
 	/**
-	 * »Ñ¿äÀÇ Á¾·ù 0: ºñ¾îÀÖÀ½ 1: »¡°£»Ñ¿ä 2: ³ë¶õ»Ñ¿ä 3: ÃÊ·Ï»Ñ¿ä 4: ÆÄ¶û»Ñ¿ä 5: º¸¶ó»Ñ¿ä 6: ¹æÇØ»Ñ¿ä(ÄŞº¸½×¾Æ °ø°İ½Ã »ı¼º)
+	 * ë¿Œìš”ì˜ ì¢…ë¥˜ 0: ë¹„ì–´ìˆìŒ 1: ë¹¨ê°„ë¿Œìš” 2: ë…¸ë€ë¿Œìš” 3: ì´ˆë¡ë¿Œìš” 4: íŒŒë‘ë¿Œìš” 5: ë³´ë¼ë¿Œìš” 6: ë°©í•´ë¿Œìš”(ì½¤ë³´ìŒ“ì•„ ê³µê²©ì‹œ ìƒì„±)
 	 */
 
 	/**
-	 * °ÔÀÓ È­¸éÀ» Å¬·¡½º
+	 * ê²Œì„ í™”ë©´ì„ í´ë˜ìŠ¤
 	 */
 
-	public boolean[][] visited = new boolean[14][8]; // ÆÄ±«Ã¼ÀÎÀ» À§ÇØ ¹æ¹®ÇÑ ÇÊµå ±â·Ï
+	public boolean[][] visited = new boolean[14][8]; // íŒŒê´´ì²´ì¸ì„ ìœ„í•´ ë°©ë¬¸í•œ í•„ë“œ ê¸°ë¡
 	public boolean[][] enemyVisited = new boolean[14][8];
-	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // Áö³ª°£ ÇÊµå ±â·ÏÀ» À§ÇÑ ¹è¿­
+	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // ì§€ë‚˜ê°„ í•„ë“œ ê¸°ë¡ì„ ìœ„í•œ ë°°ì—´
 	public ArrayList<Integer> enemyVisitedX = new ArrayList<Integer>();
 	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
 	public ArrayList<Integer> enemyVisitedY = new ArrayList<Integer>();
-	public int destroyCount; // ÆÄ±«Ã¼ÀÎÀ» À§ÇÑ ¿¬°áµÈ »Ñ¿ä Ä«¿îÆ®
+	public int destroyCount; // íŒŒê´´ì²´ì¸ì„ ìœ„í•œ ì—°ê²°ëœ ë¿Œìš” ì¹´ìš´íŠ¸
 	public int enemyDestroyCount;
-	public int checkGravity; // 0:Áß·Â X, 1: Áß·Â O, 2: Áß·ÂÀû¿ë¿Ï·á, ÆÄ±«·ÎÁ÷ ½ÇÇà
+	public int checkGravity; // 0:ì¤‘ë ¥ X, 1: ì¤‘ë ¥ O, 2: ì¤‘ë ¥ì ìš©ì™„ë£Œ, íŒŒê´´ë¡œì§ ì‹¤í–‰
 	public int enemyCheckGravity;
 
 	class GameScreen extends Canvas {
 		public GameView main;
-		public Graphics gc; // ´õºí¹öÆÛ¸µ¿ë ±×·¡ÇÈ ÄÁÅØ½ºÆ®
-		public Image doubleBuffer; // ´õºí¹öÆÛ¸µ¿ë ¹é¹öÆÛ
-		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // ¹è°æÀÌ¹ÌÁö
+		public Graphics gc; // ë”ë¸”ë²„í¼ë§ìš© ê·¸ë˜í”½ ì»¨í…ìŠ¤íŠ¸
+		public Image doubleBuffer; // ë”ë¸”ë²„í¼ë§ìš© ë°±ë²„í¼
+		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // ë°°ê²½ì´ë¯¸ì§€
 		public Font font;
-		public Image[] puyoTypeImg = { // 0Àº puyoTypeµµ ºñ¾îÀÖÀ½ ÀÌ¹Ç·Î »ç¿ëÇÏÁö ¾Ê´Â´Ù
+		public Image[] puyoTypeImg = { // 0ì€ puyoTypeë„ ë¹„ì–´ìˆìŒ ì´ë¯€ë¡œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
 				null, new ImageIcon("src/resource/puyoRed.png").getImage(),
 				new ImageIcon("src/resource/puyoYellow.png").getImage(),
 				new ImageIcon("src/resource/puyoGreen.png").getImage(),
@@ -144,7 +144,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			setLayout(null);
 		}
 
-		public void drawField() { // field ÀÇ »Ñ¿ä¸¦ ±×¸®´Â ÇÔ¼ö
+		public void drawField() { // field ì˜ ë¿Œìš”ë¥¼ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 8; j++) {
 					if (myField[i][j] > 0 && myField[i][j] < 7) {
@@ -189,7 +189,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (gc == null) {
 				doubleBuffer = createImage(640, 480);
 				if (doubleBuffer == null)
-					System.out.println("¿ÀÇÁ½ºÅ©¸° ¹öÆÛ »ı¼º ½ÇÆĞ");
+					System.out.println("ì˜¤í”„ìŠ¤í¬ë¦° ë²„í¼ ìƒì„± ì‹¤íŒ¨");
 				else
 					gc = doubleBuffer.getGraphics();
 				return;
@@ -220,7 +220,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 		}
 
-	} // GameScreen Å¬·¡½º ³¡
+	} // GameScreen í´ë˜ìŠ¤ ë
 
 	/**
 	 * Create the frame.
@@ -238,15 +238,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 
-		JButton btnNewButton = new JButton("Á¾ ·á");
-		btnNewButton.setFont(new Font("±¼¸²", Font.PLAIN, 14));
+		JButton btnNewButton = new JButton("ì¢… ë£Œ");
+		btnNewButton.setFont(new Font("êµ´ë¦¼", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				roomList.SendMessage(roomName, "302");
 				setVisible(false);
 				gameStatus = 0;
 				mainWork.interrupt();
-				// clip.close(); À½¾Ç, ³ªÁß¿¡ È°¼ºÈ­½ÃÄÑÁÙ°Í
+				// clip.close(); ìŒì•…, ë‚˜ì¤‘ì— í™œì„±í™”ì‹œì¼œì¤„ê²ƒ
 				roomList.setVisible(true);
 			}
 		});
@@ -276,8 +276,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 //        AudioFormat format;
 //        DataLine.Info info;
 //        
-//        bgm = new File("src/resource/bgm.wav"); // »ç¿ë½Ã¿¡´Â °³º° Æú´õ·Î º¯°æÇÒ °Í
-//        // ÇöÀç ÆÄÀÏ ¾ø´Â »óÅÂ, °ÔÀÓ¿¡¼­ ÃßÃâÇØ¼­ ³ÖÀºµÚ ¼öÁ¤ÇÏ°ÚÀ½
+//        bgm = new File("src/resource/bgm.wav"); // ì‚¬ìš©ì‹œì—ëŠ” ê°œë³„ í´ë”ë¡œ ë³€ê²½í•  ê²ƒ
+//        // í˜„ì¬ íŒŒì¼ ì—†ëŠ” ìƒíƒœ, ê²Œì„ì—ì„œ ì¶”ì¶œí•´ì„œ ë„£ì€ë’¤ ìˆ˜ì •í•˜ê² ìŒ
 //        
 //        
 //        try {
@@ -286,7 +286,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 //               info = new DataLine.Info(Clip.class, format);
 //               clip = (Clip)AudioSystem.getLine(info);
 //               clip.open(stream);
-//              // clip.start(); //½Ã²ô·¯¿ö¼­.. ´Ù ¸¸µé°í ÁÖ¼®¸¸ Ç®¸é µÊ
+//              // clip.start(); //ì‹œë„ëŸ¬ì›Œì„œ.. ë‹¤ ë§Œë“¤ê³  ì£¼ì„ë§Œ í’€ë©´ ë¨
 //              // clip.loop(100); 
 //               
 //        } catch (Exception e) {
@@ -301,19 +301,19 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			setVisible(false);
 			gameStatus = 0;
 			mainWork.interrupt();
-			// clip.close(); ³ªÁß¿¡ ½ÇÇà
+			// clip.close(); ë‚˜ì¤‘ì— ì‹¤í–‰
 			roomList.setVisible(true);
 		} else if (cm.code.matches("400")) {
 			initGame();
 		} else if (cm.code.matches("501")) {
-			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby ¼ø¼­
+			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby ìˆœì„œ
 			enemyCurP1 = Integer.parseInt(enemyInformation[0]);
 			enemyCurP2 = Integer.parseInt(enemyInformation[1]);
 			enemyCurX = Integer.parseInt(enemyInformation[2]);
 			enemyCurY = Integer.parseInt(enemyInformation[3]);
 			enemySubX = Integer.parseInt(enemyInformation[4]);
 			enemySubY = Integer.parseInt(enemyInformation[5]);
-			if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+			if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 				if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 					enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 					enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -327,14 +327,14 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				enemyCheckGravity = 0;
 			}
 		} else if (cm.code.matches("506")) {
-			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby ¼ø¼­
+			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby ìˆœì„œ
 			int enemyCurP1 = Integer.parseInt(enemyInformation[0]);
 			int enemyCurP2 = Integer.parseInt(enemyInformation[1]);
 			int enemyCurX = Integer.parseInt(enemyInformation[2]);
 			int enemyCurY = Integer.parseInt(enemyInformation[3]);
 			int enemySubX = Integer.parseInt(enemyInformation[4]);
 			int enemySubY = Integer.parseInt(enemyInformation[5]);
-//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 //						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 			enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 			enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -352,21 +352,21 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return roomName;
 	}
 
-	public void initGame() { // °ÔÀÓ ½ÃÀÛ½Ã º¯¼ö ÃÊ±â ¼³Á¤
+	public void initGame() { // ê²Œì„ ì‹œì‘ì‹œ ë³€ìˆ˜ ì´ˆê¸° ì„¤ì •
 
 		myScore = 0;
 		enemyScore = 0;
-		startX = 4; // °¡·ÁÁö´Â ºÎºĞ
-		startY = 1; // °¡·ÁÁö´Â ºÎºĞ
+		startX = 4; // ê°€ë ¤ì§€ëŠ” ë¶€ë¶„
+		startY = 1; // ê°€ë ¤ì§€ëŠ” ë¶€ë¶„
 		comboCount = 0;
-		delay = 17; // 17 / 1000 = 58ÇÁ·¹ÀÓ
+		delay = 17; // 17 / 1000 = 58í”„ë ˆì„
 		puyoDelay = 2000;
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
 		mainWork.start();
 		// abc();
-		textField.setText("°ÔÀÓ ½ÃÀÛ!!");
+		textField.setText("ê²Œì„ ì‹œì‘!!");
 		destroyCount = 0;
 		enemyDestroyCount=0;
 		checkGravity = 0;
@@ -380,10 +380,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			Timer timer = new Timer();
 			TimerTask task = new TimerTask() {
 				public void run() {
-					puyoDown(); // ¸¸¾à Åë½Å ¿¡·¯°¡ ¹ß»ıÇÏ¸é ¿øÀÎÀÎÁö È®ÀÎ?
+					puyoDown(); // ë§Œì•½ í†µì‹  ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ ì›ì¸ì¸ì§€ í™•ì¸?
 				}
 			};
-			timer.scheduleAtFixedRate(task, 1000, puyoDelay); // µÎ¹øÂ° ÆÄ¶ó¹ÌÅÍ´Â ¾ğÁ¦ ½ÃÀÛÇÒÁö °áÁ¤ÇÏ´Â ÇÔ¼ö, puyodelay·Î °ÉÀ» ÇÊ¿ä°¡ ¾øÀ½
+			timer.scheduleAtFixedRate(task, 1000, puyoDelay); // ë‘ë²ˆì§¸ íŒŒë¼ë¯¸í„°ëŠ” ì–¸ì œ ì‹œì‘í• ì§€ ê²°ì •í•˜ëŠ” í•¨ìˆ˜, puyodelayë¡œ ê±¸ì„ í•„ìš”ê°€ ì—†ìŒ
 
 			Timer gravityTimer = new Timer();
 			TimerTask gravityTask = new TimerTask() {
@@ -404,7 +404,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						}
 
 						if (checkGravity == 0)
-							checkGravity = 2; // Áß·Â ¿µÇâÀ» ´Ù ¹ŞÀ¸¸é Ã¼ÀÎ ·ê ½ÇÇà
+							checkGravity = 2; // ì¤‘ë ¥ ì˜í–¥ì„ ë‹¤ ë°›ìœ¼ë©´ ì²´ì¸ ë£° ì‹¤í–‰
 					}
 				}
 			};
@@ -429,7 +429,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 							}
 
 							if (enemyCheckGravity == 0)
-								enemyCheckGravity = 2; // Áß·Â ¿µÇâÀ» ´Ù ¹ŞÀ¸¸é Ã¼ÀÎ ·ê ½ÇÇà
+								enemyCheckGravity = 2; // ì¤‘ë ¥ ì˜í–¥ì„ ë‹¤ ë°›ìœ¼ë©´ ì²´ì¸ ë£° ì‹¤í–‰
 						}
 					}
 			};
@@ -440,10 +440,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
-				process(); // ÀüÃ¼ ÇÁ·Î¼¼½º Ã³¸®
-				keyProcess(); // Å° ÀÔ·Â ¹Ş¾Æ¼­ Ã³¸®
+				process(); // ì „ì²´ í”„ë¡œì„¸ìŠ¤ ì²˜ë¦¬
+				keyProcess(); // í‚¤ ì…ë ¥ ë°›ì•„ì„œ ì²˜ë¦¬
 
-				if (System.currentTimeMillis() - preTime < delay) { // ½Ã°£ µô·¹ÀÌ ¸ÂÃß´Â ÀÛ¾÷, 10ÁÖÂ÷ ÀÚ¹Ù°ÔÀÓ¿¡¼­ °¡Á®¿È
+				if (System.currentTimeMillis() - preTime < delay) { // ì‹œê°„ ë”œë ˆì´ ë§ì¶”ëŠ” ì‘ì—…, 10ì£¼ì°¨ ìë°”ê²Œì„ì—ì„œ ê°€ì ¸ì˜´
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
 				}
 
@@ -453,7 +453,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 
-	public void process() { // °¢Á¾ ·ÎÁ÷ Ã³¸®
+	public void process() { // ê°ì¢… ë¡œì§ ì²˜ë¦¬
 		switch (gameStatus) {
 		case 0:
 			break;
@@ -472,7 +472,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	}
 
 	public boolean checkEnemyDropDone() {
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 				enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -482,9 +482,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 
-	public boolean checkDropDone() { // ³«ÇÏÁßÀÌ´ø »Ñ¿ä°¡ ¸ØÃè´ÂÁö È®ÀÎ(¹Ù´Ú¿¡ ´ê¾Ò´ÂÁö)
+	public boolean checkDropDone() { // ë‚™í•˜ì¤‘ì´ë˜ ë¿Œìš”ê°€ ë©ˆì·„ëŠ”ì§€ í™•ì¸(ë°”ë‹¥ì— ë‹¿ì•˜ëŠ”ì§€)
 
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // Àû »Ñ¿äµµ °°ÀÌ È®ÀÎ
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // ì  ë¿Œìš”ë„ ê°™ì´ í™•ì¸
 			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 				enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -505,8 +505,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 
-	public void checkChainRule() { // ¸ğµç ÇÊµå¸¦ È®ÀÎÇÏ¸ç ¹æ¹®ÇÏÁö ¾Ê°í, »Ñ¿ä°¡ ÀÖ´Â°æ¿ì ÆÄ±«·ÎÁ÷½ÇÇà
-		// °è¼ÓÇØ¼­ µ¹¸®¸é ¿À·ù¹ß»ı °¡´É, »Ñ¿ä°¡ ³«ÇÏµÈ(Á¶ÀÛÇØ¼­ÀÌ´ø, ÆÄ±«µÇ¼­ÀÌ´ø) °æ¿ì¿¡¸¸ ½ÇÇà
+	public void checkChainRule() { // ëª¨ë“  í•„ë“œë¥¼ í™•ì¸í•˜ë©° ë°©ë¬¸í•˜ì§€ ì•Šê³ , ë¿Œìš”ê°€ ìˆëŠ”ê²½ìš° íŒŒê´´ë¡œì§ì‹¤í–‰
+		// ê³„ì†í•´ì„œ ëŒë¦¬ë©´ ì˜¤ë¥˜ë°œìƒ ê°€ëŠ¥, ë¿Œìš”ê°€ ë‚™í•˜ëœ(ì¡°ì‘í•´ì„œì´ë˜, íŒŒê´´ë˜ì„œì´ë˜) ê²½ìš°ì—ë§Œ ì‹¤í–‰
 		clearVisitedField();
 		visitedX.clear();
 		visitedY.clear();
@@ -521,9 +521,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						visitedX.clear();
 						visitedY.clear();
 					}
-				} // ¹æ¹®, »Ñ¿äÁ¸ÀçÈ®ÀÎ
-			} // y for ¹®
-		} // x for¹®
+				} // ë°©ë¬¸, ë¿Œìš”ì¡´ì¬í™•ì¸
+			} // y for ë¬¸
+		} // x forë¬¸
 	}
 
 	public void enemyCheckChainRule() {
@@ -541,12 +541,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						enemyVisitedX.clear();
 						enemyVisitedY.clear();
 					}
-				} // ¹æ¹®, »Ñ¿äÁ¸ÀçÈ®ÀÎ
-			} // y for ¹®
-		} // x for¹®
+				} // ë°©ë¬¸, ë¿Œìš”ì¡´ì¬í™•ì¸
+			} // y for ë¬¸
+		} // x forë¬¸
 	}
 
-	public boolean puyoDestroy(int x, int y, int puyo_type) { // ÆÄ±«·ÎÁ÷½ÇÇà, ÀÎÁ¢ »Ñ¿äµéÀ» È®ÀÎÇÏ¸ç ÀÚ½Å°ú µ¿ÀÏÇÏ¸é Ä«¿îÆ® Áõ°¡
+	public boolean puyoDestroy(int x, int y, int puyo_type) { // íŒŒê´´ë¡œì§ì‹¤í–‰, ì¸ì ‘ ë¿Œìš”ë“¤ì„ í™•ì¸í•˜ë©° ìì‹ ê³¼ ë™ì¼í•˜ë©´ ì¹´ìš´íŠ¸ ì¦ê°€
 
 		visited[x][y] = true;
 		destroyCount++;
@@ -572,7 +572,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return true;
 	}
 
-	public boolean enemyPuyoDestroy(int x, int y, int puyo_type) { // ÆÄ±«·ÎÁ÷½ÇÇà, ÀÎÁ¢ »Ñ¿äµéÀ» È®ÀÎÇÏ¸ç ÀÚ½Å°ú µ¿ÀÏÇÏ¸é Ä«¿îÆ® Áõ°¡
+	public boolean enemyPuyoDestroy(int x, int y, int puyo_type) { // íŒŒê´´ë¡œì§ì‹¤í–‰, ì¸ì ‘ ë¿Œìš”ë“¤ì„ í™•ì¸í•˜ë©° ìì‹ ê³¼ ë™ì¼í•˜ë©´ ì¹´ìš´íŠ¸ ì¦ê°€
 
 		enemyVisited[x][y] = true;
 		enemyDestroyCount++;
@@ -598,29 +598,29 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return true;
 	}
 
-	public void realDestroyPuyo() { // ½ÇÁ¦ »Ñ¿äµéÀ» ÇÊµå¿¡¼­ Á¦°Å, À§¿¡ ½×ÀÎ »Ñ¿äµéÀ» µå¶ø??
+	public void realDestroyPuyo() { // ì‹¤ì œ ë¿Œìš”ë“¤ì„ í•„ë“œì—ì„œ ì œê±°, ìœ„ì— ìŒ“ì¸ ë¿Œìš”ë“¤ì„ ë“œë??
 
 		for (int i = 0; i < visitedX.size(); i++) {
 			myField[visitedX.get(i)][visitedY.get(i)] = 0;
 		}
 
 		myScore += destroyCount * 10;
-		// System.out.println(String.format("my score : %d", myScore)); // µğ¹ö±ë¿ë
+		// System.out.println(String.format("my score : %d", myScore)); // ë””ë²„ê¹…ìš©
 		clearVisitedField();
 		checkGravity = 1;
 	}
 	
-	public void enemyRealDestroyPuyo() { // ½ÇÁ¦ »Ñ¿äµéÀ» ÇÊµå¿¡¼­ Á¦°Å, À§¿¡ ½×ÀÎ »Ñ¿äµéÀ» µå¶ø??
+	public void enemyRealDestroyPuyo() { // ì‹¤ì œ ë¿Œìš”ë“¤ì„ í•„ë“œì—ì„œ ì œê±°, ìœ„ì— ìŒ“ì¸ ë¿Œìš”ë“¤ì„ ë“œë??
 
 		for (int i = 0; i < enemyVisitedX.size(); i++) {
 			enemyField[enemyVisitedX.get(i)][enemyVisitedY.get(i)] = 0;
 		}
-		// System.out.println(String.format("my score : %d", myScore)); // µğ¹ö±ë¿ë
+		// System.out.println(String.format("my score : %d", myScore)); // ë””ë²„ê¹…ìš©
 		enemyClearVisitedField();
 		enemyCheckGravity = 1;
 	}
 
-	public void clearVisitedField() { // ¹æ¹®»ç½Ç ÃÊ±âÈ­
+	public void clearVisitedField() { // ë°©ë¬¸ì‚¬ì‹¤ ì´ˆê¸°í™”
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				visited[i][j] = false;
@@ -628,7 +628,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 
-	public void enemyClearVisitedField() { // ¹æ¹®»ç½Ç ÃÊ±âÈ­
+	public void enemyClearVisitedField() { // ë°©ë¬¸ì‚¬ì‹¤ ì´ˆê¸°í™”
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				enemyVisited[i][j] = false;
@@ -636,7 +636,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 
-	public void gravity() { // ¾Æ·¡¿¡ ÀÖ´Â »Ñ¿ä°¡ ÆÄ±«µÉ ½Ã À§¿¡ ÀÖ´Â »Ñ¿äµéÀº ºñ¾îÀÖ´Â °ø°£À¸·Î ³»·Á¿È
+	public void gravity() { // ì•„ë˜ì— ìˆëŠ” ë¿Œìš”ê°€ íŒŒê´´ë  ì‹œ ìœ„ì— ìˆëŠ” ë¿Œìš”ë“¤ì€ ë¹„ì–´ìˆëŠ” ê³µê°„ìœ¼ë¡œ ë‚´ë ¤ì˜´
 
 	}
 
@@ -710,7 +710,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (myField[curY + 1][curX] == 0 && myField[subY + 1][subX] == 0) {
 				curY++;
 				subY++;
-			} else { // ÇÑÂÊÀÌ ²÷±â¸é ³ª¸ÓÁö ÇÑÂÊÀº ÀÚÀ¯³«ÇÏ
+			} else { // í•œìª½ì´ ëŠê¸°ë©´ ë‚˜ë¨¸ì§€ í•œìª½ì€ ììœ ë‚™í•˜
 				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "506");
 				cutConnect();
 			}
@@ -735,17 +735,17 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 	}
 
-	public void checkGameOver() { // °ÔÀÓ ¿À¹ö Ã³¸®(»Ñ¿ä°¡ ÃµÀåÀ» Ä§)
+	public void checkGameOver() { // ê²Œì„ ì˜¤ë²„ ì²˜ë¦¬(ë¿Œìš”ê°€ ì²œì¥ì„ ì¹¨)
 
 		// gameStatus = 0;
 		// loop = false;
 	}
 
-	// private void createPuyo(Graphics g) { // ´ÙÀ½ »Ñ¿ä »ı¼º(¾ÆÁ÷ ´ë±â»óÅÂ)
-	// ³ªÁß¿¡ ±¸Çö ÀÏ´Ü ¾Æ·¡°É·Î ¹Ù·Î ½ÃÀÛÀ§Ä¡¿¡ »ı¼ºÇÏ±â
+	// private void createPuyo(Graphics g) { // ë‹¤ìŒ ë¿Œìš” ìƒì„±(ì•„ì§ ëŒ€ê¸°ìƒíƒœ)
+	// ë‚˜ì¤‘ì— êµ¬í˜„ ì¼ë‹¨ ì•„ë˜ê±¸ë¡œ ë°”ë¡œ ì‹œì‘ìœ„ì¹˜ì— ìƒì„±í•˜ê¸°
 	// }
 
-	public void dropPuyo() { // ´ÙÀ½ »Ñ¿ä µå¶ø(´ë±â»óÅÂ¿¡¼­ ²¨³»¼­ ³«ÇÏ)
+	public void dropPuyo() { // ë‹¤ìŒ ë¿Œìš” ë“œë(ëŒ€ê¸°ìƒíƒœì—ì„œ êº¼ë‚´ì„œ ë‚™í•˜)
 		curP1 = (int) (Math.random() * 5 + 1);
 		curP2 = (int) (Math.random() * 5 + 1);
 		curX = startX;
@@ -755,7 +755,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		curShape = 0;
 	}
 
-	public void removePuyo(int x, int y) { // »Ñ¿ä Á¦°Å
+	public void removePuyo(int x, int y) { // ë¿Œìš” ì œê±°
 		myField[x][y] = 0;
 		comboCount++;
 	}
@@ -791,10 +791,11 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 			break;
 		}
+
 		roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 	}
 
-	public void keyProcess() { // »Ñ¿ä ÀÌµ¿
+	public void keyProcess() { // ë¿Œìš” ì´ë™
 		switch (gameStatus) {
 		case 0:
 			break;
@@ -867,11 +868,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 				break;
 			}
-			try { // Å°°¡ ³Ê¹« ºü¸£°Ô ¸ÔÀ¸¸é ¾ÈµÊ µô·¹ÀÌ
-				Thread.sleep(100); // ¾à°£ 0.05ÃÊ´Â ³Ê¹« ÂªÀº ´À³¦?
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			if (!Thread.currentThread().isInterrupted()) {
+				try { // í‚¤ê°€ ë„ˆë¬´ ë¹ ë¥´ê²Œ ë¨¹ìœ¼ë©´ ì•ˆë¨ ë”œë ˆì´
+					Thread.sleep(80); // ì•½ê°„ 0.05ì´ˆëŠ” ë„ˆë¬´ ì§§ì€ ëŠë‚Œ?
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
 			}
 		}
 	}
-} // ÀüÃ¼ Å¬·¡½º ³¡
+} // ì „ì²´ í´ë˜ìŠ¤ ë
