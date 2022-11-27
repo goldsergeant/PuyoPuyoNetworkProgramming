@@ -222,7 +222,6 @@ public class MainGameServer extends JFrame {
 		public GameMsg ReadGameMsg() {
 			Object obj = null;
 			GameMsg cm = null;
-			// Android와 호환성을 위해 각각의 Field를 따로따로 읽는다.
 			try {
 				obj = ois.readObject();
 				if(obj instanceof GameMsg)
@@ -244,7 +243,7 @@ public class MainGameServer extends JFrame {
 				GameMsg cm = null;
 				if (client_socket == null)
 					break;
-				cm = (GameMsg)ReadGameMsg();
+				cm = ReadGameMsg();
 				if (cm == null)
 					break;
 				if (cm.code.length() == 0)
