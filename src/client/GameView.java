@@ -51,33 +51,33 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public GameScreen gameScreen;
 	Thread mainWork;
 
-	private final static int UP_PRESSED = 0x001; // 키 값
+	private final static int UP_PRESSED = 0x001; // �궎 媛�
 	private final static int DOWN_PRESSED = 0x002;
 	private final static int LEFT_PRESSED = 0x004;
 	private final static int RIGHT_PRESSED = 0x008;
-	public int keybuff; // 키 버퍼값
+	public int keybuff; // �궎 踰꾪띁媛�
 
 	public boolean loop = true;
-	public int delay; // 프레임 조절 딜레이 1/1000 초 단위
+	public int delay; // �봽�젅�엫 議곗젅 �뵜�젅�씠 1/1000 珥� �떒�쐞
 	public long puyoDelay;
-	public long preTime; // loop 간격 조절을 위한 시간 체크
+	public long preTime; // loop 媛꾧꺽 議곗젅�쓣 �쐞�븳 �떆媛� 泥댄겕
 
-	public int gameStatus; // 게임 상태 0:중지, 1: 실행중
+	public int gameStatus; // 寃뚯엫 �긽�깭 0:以묒�, 1: �떎�뻾以�
 
-	public int myScore, enemyScore; // 나와 상대방 점수
-	public int comboCount; // 콤보파괴시 증가하여 방해뿌요 생성 후 0으로 초기화
+	public int myScore, enemyScore; // �굹�� �긽��諛� �젏�닔
+	public int comboCount; // 肄ㅻ낫�뙆愿댁떆 利앷��븯�뿬 諛⑺빐肉뚯슂 �깮�꽦 �썑 0�쑝濡� 珥덇린�솕
 
-	public int curX, curY; // 현재 조작중인 뿌요의 위치
-	public int subX, subY; // 조작중인 두번째 뿌요의 위치
-	public int curP1, curP2; // 현재 조작중인 뿌요의 종류
-	public int startX, startY; // 새로 뿌요 생성시 위치
+	public int curX, curY; // �쁽�옱 議곗옉以묒씤 肉뚯슂�쓽 �쐞移�
+	public int subX, subY; // 議곗옉以묒씤 �몢踰덉㎏ 肉뚯슂�쓽 �쐞移�
+	public int curP1, curP2; // �쁽�옱 議곗옉以묒씤 肉뚯슂�쓽 醫낅쪟
+	public int startX, startY; // �깉濡� 肉뚯슂 �깮�꽦�떆 �쐞移�
 
 	public int enemyCurX, enemyCurY;
 	public int enemySubX, enemySubY;
 	public int enemyCurP1, enemyCurP2;
 	private Clip clip;
 
-	public int[][] myField = { // 내 게임 필드 0: 비어있음 9: 채워져있음(벽)
+	public int[][] myField = { // �궡 寃뚯엫 �븘�뱶 0: 鍮꾩뼱�엳�쓬 9: 梨꾩썙�졇�엳�쓬(踰�)
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, // 0,0 ~ 7,0
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
@@ -86,16 +86,16 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			{ 9, 9, 9, 9, 9, 9, 9, 9 } // 0,13 ~ 7,13
 	};
 
-	public int[][] enemyField = { // 상대방 게임 필드, 제어 X 오로지 그리기용
+	public int[][] enemyField = { // �긽��諛� 寃뚯엫 �븘�뱶, �젣�뼱 X �삤濡쒖� 洹몃━湲곗슜
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 9, 9, 9, 9, 9, 9, 9 } };
 
-	public int curShape; // 현재 조작중인 뿌요의 모양 (4가지) 순서대로 시계방향으로 회전
+	public int curShape; // �쁽�옱 議곗옉以묒씤 肉뚯슂�쓽 紐⑥뼇 (4媛�吏�) �닚�꽌��濡� �떆怨꾨갑�뼢�쑝濡� �쉶�쟾
 	/**
-	 * 0: . A . B가 컨트롤의 메인이 되는 뿌요임 . B . . . .
+	 * 0: . A . B媛� 而⑦듃濡ㅼ쓽 硫붿씤�씠 �릺�뒗 肉뚯슂�엫 . B . . . .
 	 * 
 	 * 1: . . . . B A . . .
 	 * 
@@ -107,31 +107,31 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	private JTextField textField;
 	public int puyoType;
 	/**
-	 * 뿌요의 종류 0: 비어있음 1: 빨간뿌요 2: 노란뿌요 3: 초록뿌요 4: 파랑뿌요 5: 보라뿌요 6: 방해뿌요(콤보쌓아 공격시 생성)
+	 * 肉뚯슂�쓽 醫낅쪟 0: 鍮꾩뼱�엳�쓬 1: 鍮④컙肉뚯슂 2: �끂��肉뚯슂 3: 珥덈줉肉뚯슂 4: �뙆�옉肉뚯슂 5: 蹂대씪肉뚯슂 6: 諛⑺빐肉뚯슂(肄ㅻ낫�뙎�븘 怨듦꺽�떆 �깮�꽦)
 	 */
 
 	/**
-	 * 게임 화면을 클래스
+	 * 寃뚯엫 �솕硫댁쓣 �겢�옒�뒪
 	 */
 
-	public boolean[][] visited = new boolean[14][8]; // 파괴체인을 위해 방문한 필드 기록
+	public boolean[][] visited = new boolean[14][8]; // �뙆愿댁껜�씤�쓣 �쐞�빐 諛⑸Ц�븳 �븘�뱶 湲곕줉
 	public boolean[][] enemyVisited = new boolean[14][8];
-	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // 지나간 필드 기록을 위한 배열
+	public ArrayList<Integer> visitedX = new ArrayList<Integer>(); // 吏��굹媛� �븘�뱶 湲곕줉�쓣 �쐞�븳 諛곗뿴
 	public ArrayList<Integer> enemyVisitedX = new ArrayList<Integer>();
 	public ArrayList<Integer> visitedY = new ArrayList<Integer>();
 	public ArrayList<Integer> enemyVisitedY = new ArrayList<Integer>();
-	public int destroyCount; // 파괴체인을 위한 연결된 뿌요 카운트
+	public int destroyCount; // �뙆愿댁껜�씤�쓣 �쐞�븳 �뿰寃곕맂 肉뚯슂 移댁슫�듃
 	public int enemyDestroyCount;
-	public int checkGravity; // 0:중력 X, 1: 중력 O, 2: 중력적용완료, 파괴로직 실행
+	public int checkGravity; // 0:以묐젰 X, 1: 以묐젰 O, 2: 以묐젰�쟻�슜�셿猷�, �뙆愿대줈吏� �떎�뻾
 	public int enemyCheckGravity;
 
 	class GameScreen extends Canvas {
 		public GameView main;
-		public Graphics gc; // 더블버퍼링용 그래픽 컨텍스트
-		public Image doubleBuffer; // 더블버퍼링용 백버퍼
-		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // 배경이미지
+		public Graphics gc; // �뜑釉붾쾭�띁留곸슜 洹몃옒�뵿 而⑦뀓�뒪�듃
+		public Image doubleBuffer; // �뜑釉붾쾭�띁留곸슜 諛깅쾭�띁
+		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage(); // 諛곌꼍�씠誘몄�
 		public Font font;
-		public Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
+		public Image[] puyoTypeImg = { // 0�� puyoType�룄 鍮꾩뼱�엳�쓬 �씠誘�濡� �궗�슜�븯吏� �븡�뒗�떎
 				null, new ImageIcon("src/resource/puyoRed.png").getImage(),
 				new ImageIcon("src/resource/puyoYellow.png").getImage(),
 				new ImageIcon("src/resource/puyoGreen.png").getImage(),
@@ -144,7 +144,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			setLayout(null);
 		}
 
-		public void drawField() { // field 의 뿌요를 그리는 함수
+		public void drawField() { // field �쓽 肉뚯슂瑜� 洹몃━�뒗 �븿�닔
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 8; j++) {
 					if (myField[i][j] > 0 && myField[i][j] < 7) {
@@ -189,7 +189,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (gc == null) {
 				doubleBuffer = createImage(640, 480);
 				if (doubleBuffer == null)
-					System.out.println("오프스크린 버퍼 생성 실패");
+					System.out.println("�삤�봽�뒪�겕由� 踰꾪띁 �깮�꽦 �떎�뙣");
 				else
 					gc = doubleBuffer.getGraphics();
 				return;
@@ -220,7 +220,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 		}
 
-	} // GameScreen 클래스 끝
+	} // GameScreen �겢�옒�뒪 �걹
 
 	/**
 	 * Create the frame.
@@ -238,15 +238,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 
-		JButton btnNewButton = new JButton("종 료");
-		btnNewButton.setFont(new Font("굴림", Font.PLAIN, 14));
+		JButton btnNewButton = new JButton("醫� 猷�");
+		btnNewButton.setFont(new Font("援대┝", Font.PLAIN, 14));
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				roomList.SendMessage(roomName, "302");
 				setVisible(false);
 				gameStatus = 0;
 				mainWork.interrupt();
-				// clip.close(); 음악, 나중에 활성화시켜줄것
+				// clip.close(); �쓬�븙, �굹以묒뿉 �솢�꽦�솕�떆耳쒖쨪寃�
 				roomList.setVisible(true);
 			}
 		});
@@ -276,8 +276,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 //        AudioFormat format;
 //        DataLine.Info info;
 //        
-//        bgm = new File("src/resource/bgm.wav"); // 사용시에는 개별 폴더로 변경할 것
-//        // 현재 파일 없는 상태, 게임에서 추출해서 넣은뒤 수정하겠음
+//        bgm = new File("src/resource/bgm.wav"); // �궗�슜�떆�뿉�뒗 媛쒕퀎 �뤃�뜑濡� 蹂�寃쏀븷 寃�
+//        // �쁽�옱 �뙆�씪 �뾾�뒗 �긽�깭, 寃뚯엫�뿉�꽌 異붿텧�빐�꽌 �꽔���뮘 �닔�젙�븯寃좎쓬
 //        
 //        
 //        try {
@@ -286,7 +286,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 //               info = new DataLine.Info(Clip.class, format);
 //               clip = (Clip)AudioSystem.getLine(info);
 //               clip.open(stream);
-//              // clip.start(); //시끄러워서.. 다 만들고 주석만 풀면 됨
+//              // clip.start(); //�떆�걚�윭�썙�꽌.. �떎 留뚮뱾怨� 二쇱꽍留� ��硫� �맖
 //              // clip.loop(100); 
 //               
 //        } catch (Exception e) {
@@ -301,24 +301,32 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			setVisible(false);
 			gameStatus = 0;
 			mainWork.interrupt();
-			// clip.close(); 나중에 실행
+			// clip.close(); �굹以묒뿉 �떎�뻾
 			roomList.setVisible(true);
 		} else if (cm.code.matches("400")) {
 			initGame();
 		} else if (cm.code.matches("501")) {
-			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby 순서
+			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby �닚�꽌
 			enemyCurP1 = Integer.parseInt(enemyInformation[0]);
 			enemyCurP2 = Integer.parseInt(enemyInformation[1]);
 			enemyCurX = Integer.parseInt(enemyInformation[2]);
 			enemyCurY = Integer.parseInt(enemyInformation[3]);
 			enemySubX = Integer.parseInt(enemyInformation[4]);
 			enemySubY = Integer.parseInt(enemyInformation[5]);
-			if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+			if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // �쟻 肉뚯슂�룄 媛숈씠 �솗�씤
 				if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 					enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 					enemyField[enemySubY][enemySubX] = enemyCurP2;
 				}
 			}
+//			String arr[]=cm.data.split(" ");
+//			int a=0;
+//			for (int i = 0; i < 14; i++) {
+//				for (int j = 0; j < 8; j++) {
+//					enemyField[i][j]=Integer.parseInt(arr[a]);
+//					a++;
+//				}
+//			}
 		} else if (cm.code.matches("502")) {
 			enemyCheckChainRule();
 		} else if (cm.code.matches("505")) {
@@ -327,14 +335,14 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				enemyCheckGravity = 0;
 			}
 		} else if (cm.code.matches("506")) {
-			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby 순서
+			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby �닚�꽌
 			int enemyCurP1 = Integer.parseInt(enemyInformation[0]);
 			int enemyCurP2 = Integer.parseInt(enemyInformation[1]);
 			int enemyCurX = Integer.parseInt(enemyInformation[2]);
 			int enemyCurY = Integer.parseInt(enemyInformation[3]);
 			int enemySubX = Integer.parseInt(enemyInformation[4]);
 			int enemySubY = Integer.parseInt(enemyInformation[5]);
-//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+//				 if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // �쟻 肉뚯슂�룄 媛숈씠 �솗�씤
 //						if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 			enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 			enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -352,21 +360,21 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return roomName;
 	}
 
-	public void initGame() { // 게임 시작시 변수 초기 설정
+	public void initGame() { // 寃뚯엫 �떆�옉�떆 蹂��닔 珥덇린 �꽕�젙
 
 		myScore = 0;
 		enemyScore = 0;
-		startX = 4; // 가려지는 부분
-		startY = 1; // 가려지는 부분
+		startX = 4; // 媛��젮吏��뒗 遺�遺�
+		startY = 1; // 媛��젮吏��뒗 遺�遺�
 		comboCount = 0;
-		delay = 17; // 17 / 1000 = 58프레임
+		delay = 17; // 17 / 1000 = 58�봽�젅�엫
 		puyoDelay = 2000;
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
 		mainWork.start();
 		// abc();
-		textField.setText("게임 시작!!");
+		textField.setText("寃뚯엫 �떆�옉!!");
 		destroyCount = 0;
 		enemyDestroyCount=0;
 		checkGravity = 0;
@@ -380,10 +388,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			Timer timer = new Timer();
 			TimerTask task = new TimerTask() {
 				public void run() {
-					puyoDown(); // 만약 통신 에러가 발생하면 원인인지 확인?
+					puyoDown(); // 留뚯빟 �넻�떊 �뿉�윭媛� 諛쒖깮�븯硫� �썝�씤�씤吏� �솗�씤?
 				}
 			};
-			timer.scheduleAtFixedRate(task, 1000, puyoDelay); // 두번째 파라미터는 언제 시작할지 결정하는 함수, puyodelay로 걸을 필요가 없음
+			timer.scheduleAtFixedRate(task, 1000, puyoDelay); // �몢踰덉㎏ �뙆�씪誘명꽣�뒗 �뼵�젣 �떆�옉�븷吏� 寃곗젙�븯�뒗 �븿�닔, puyodelay濡� 嫄몄쓣 �븘�슂媛� �뾾�쓬
 
 			Timer gravityTimer = new Timer();
 			TimerTask gravityTask = new TimerTask() {
@@ -404,7 +412,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						}
 
 						if (checkGravity == 0)
-							checkGravity = 2; // 중력 영향을 다 받으면 체인 룰 실행
+							checkGravity = 2; // 以묐젰 �쁺�뼢�쓣 �떎 諛쏆쑝硫� 泥댁씤 猷� �떎�뻾
 					}
 				}
 			};
@@ -429,7 +437,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 							}
 
 							if (enemyCheckGravity == 0)
-								enemyCheckGravity = 2; // 중력 영향을 다 받으면 체인 룰 실행
+								enemyCheckGravity = 2; // 以묐젰 �쁺�뼢�쓣 �떎 諛쏆쑝硫� 泥댁씤 猷� �떎�뻾
 						}
 					}
 			};
@@ -440,10 +448,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 				preTime = System.currentTimeMillis();
 				gameScreen.repaint();
-				process(); // 전체 프로세스 처리
-				keyProcess(); // 키 입력 받아서 처리
+				process(); // �쟾泥� �봽濡쒖꽭�뒪 泥섎━
+				keyProcess(); // �궎 �엯�젰 諛쏆븘�꽌 泥섎━
 
-				if (System.currentTimeMillis() - preTime < delay) { // 시간 딜레이 맞추는 작업, 10주차 자바게임에서 가져옴
+				if (System.currentTimeMillis() - preTime < delay) { // �떆媛� �뵜�젅�씠 留욎텛�뒗 �옉�뾽, 10二쇱감 �옄諛붽쾶�엫�뿉�꽌 媛��졇�샂
 					Thread.sleep(delay - System.currentTimeMillis() + preTime);
 				}
 
@@ -453,7 +461,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 
-	public void process() { // 각종 로직 처리
+	public void process() { // 媛곸쥌 濡쒖쭅 泥섎━
 		switch (gameStatus) {
 		case 0:
 			break;
@@ -472,7 +480,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	}
 
 	public boolean checkEnemyDropDone() {
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // �쟻 肉뚯슂�룄 媛숈씠 �솗�씤
 			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 				enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -482,9 +490,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 
-	public boolean checkDropDone() { // 낙하중이던 뿌요가 멈췄는지 확인(바닥에 닿았는지)
+	public boolean checkDropDone() { // �굺�븯以묒씠�뜕 肉뚯슂媛� 硫덉톬�뒗吏� �솗�씤(諛붾떏�뿉 �떯�븯�뒗吏�)
 
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // 적 뿌요도 같이 확인
+		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // �쟻 肉뚯슂�룄 媛숈씠 �솗�씤
 			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
 				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 				enemyField[enemySubY][enemySubX] = enemyCurP2;
@@ -505,8 +513,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 
-	public void checkChainRule() { // 모든 필드를 확인하며 방문하지 않고, 뿌요가 있는경우 파괴로직실행
-		// 계속해서 돌리면 오류발생 가능, 뿌요가 낙하된(조작해서이던, 파괴되서이던) 경우에만 실행
+	public void checkChainRule() { // 紐⑤뱺 �븘�뱶瑜� �솗�씤�븯硫� 諛⑸Ц�븯吏� �븡怨�, 肉뚯슂媛� �엳�뒗寃쎌슦 �뙆愿대줈吏곸떎�뻾
+		// 怨꾩냽�빐�꽌 �룎由щ㈃ �삤瑜섎컻�깮 媛��뒫, 肉뚯슂媛� �굺�븯�맂(議곗옉�빐�꽌�씠�뜕, �뙆愿대릺�꽌�씠�뜕) 寃쎌슦�뿉留� �떎�뻾
 		clearVisitedField();
 		visitedX.clear();
 		visitedY.clear();
@@ -521,9 +529,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						visitedX.clear();
 						visitedY.clear();
 					}
-				} // 방문, 뿌요존재확인
-			} // y for 문
-		} // x for문
+				} // 諛⑸Ц, 肉뚯슂議댁옱�솗�씤
+			} // y for 臾�
+		} // x for臾�
 	}
 
 	public void enemyCheckChainRule() {
@@ -541,12 +549,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						enemyVisitedX.clear();
 						enemyVisitedY.clear();
 					}
-				} // 방문, 뿌요존재확인
-			} // y for 문
-		} // x for문
+				} // 諛⑸Ц, 肉뚯슂議댁옱�솗�씤
+			} // y for 臾�
+		} // x for臾�
 	}
 
-	public boolean puyoDestroy(int x, int y, int puyo_type) { // 파괴로직실행, 인접 뿌요들을 확인하며 자신과 동일하면 카운트 증가
+	public boolean puyoDestroy(int x, int y, int puyo_type) { // �뙆愿대줈吏곸떎�뻾, �씤�젒 肉뚯슂�뱾�쓣 �솗�씤�븯硫� �옄�떊怨� �룞�씪�븯硫� 移댁슫�듃 利앷�
 
 		visited[x][y] = true;
 		destroyCount++;
@@ -572,7 +580,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return true;
 	}
 
-	public boolean enemyPuyoDestroy(int x, int y, int puyo_type) { // 파괴로직실행, 인접 뿌요들을 확인하며 자신과 동일하면 카운트 증가
+	public boolean enemyPuyoDestroy(int x, int y, int puyo_type) { // �뙆愿대줈吏곸떎�뻾, �씤�젒 肉뚯슂�뱾�쓣 �솗�씤�븯硫� �옄�떊怨� �룞�씪�븯硫� 移댁슫�듃 利앷�
 
 		enemyVisited[x][y] = true;
 		enemyDestroyCount++;
@@ -598,29 +606,29 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return true;
 	}
 
-	public void realDestroyPuyo() { // 실제 뿌요들을 필드에서 제거, 위에 쌓인 뿌요들을 드랍??
+	public void realDestroyPuyo() { // �떎�젣 肉뚯슂�뱾�쓣 �븘�뱶�뿉�꽌 �젣嫄�, �쐞�뿉 �뙎�씤 肉뚯슂�뱾�쓣 �뱶�엻??
 
 		for (int i = 0; i < visitedX.size(); i++) {
 			myField[visitedX.get(i)][visitedY.get(i)] = 0;
 		}
 
 		myScore += destroyCount * 10;
-		// System.out.println(String.format("my score : %d", myScore)); // 디버깅용
+		// System.out.println(String.format("my score : %d", myScore)); // �뵒踰꾧퉭�슜
 		clearVisitedField();
 		checkGravity = 1;
 	}
 	
-	public void enemyRealDestroyPuyo() { // 실제 뿌요들을 필드에서 제거, 위에 쌓인 뿌요들을 드랍??
+	public void enemyRealDestroyPuyo() { // �떎�젣 肉뚯슂�뱾�쓣 �븘�뱶�뿉�꽌 �젣嫄�, �쐞�뿉 �뙎�씤 肉뚯슂�뱾�쓣 �뱶�엻??
 
 		for (int i = 0; i < enemyVisitedX.size(); i++) {
 			enemyField[enemyVisitedX.get(i)][enemyVisitedY.get(i)] = 0;
 		}
-		// System.out.println(String.format("my score : %d", myScore)); // 디버깅용
+		// System.out.println(String.format("my score : %d", myScore)); // �뵒踰꾧퉭�슜
 		enemyClearVisitedField();
 		enemyCheckGravity = 1;
 	}
 
-	public void clearVisitedField() { // 방문사실 초기화
+	public void clearVisitedField() { // 諛⑸Ц�궗�떎 珥덇린�솕
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				visited[i][j] = false;
@@ -628,7 +636,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 
-	public void enemyClearVisitedField() { // 방문사실 초기화
+	public void enemyClearVisitedField() { // 諛⑸Ц�궗�떎 珥덇린�솕
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
 				enemyVisited[i][j] = false;
@@ -636,7 +644,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 
-	public void gravity() { // 아래에 있는 뿌요가 파괴될 시 위에 있는 뿌요들은 비어있는 공간으로 내려옴
+	public void gravity() { // �븘�옒�뿉 �엳�뒗 肉뚯슂媛� �뙆愿대맆 �떆 �쐞�뿉 �엳�뒗 肉뚯슂�뱾�� 鍮꾩뼱�엳�뒗 怨듦컙�쑝濡� �궡�젮�샂
 
 	}
 
@@ -710,7 +718,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (myField[curY + 1][curX] == 0 && myField[subY + 1][subX] == 0) {
 				curY++;
 				subY++;
-			} else { // 한쪽이 끊기면 나머지 한쪽은 자유낙하
+			} else { // �븳履쎌씠 �걡湲곕㈃ �굹癒몄� �븳履쎌� �옄�쑀�굺�븯
 				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "506");
 				cutConnect();
 			}
@@ -735,17 +743,17 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 	}
 
-	public void checkGameOver() { // 게임 오버 처리(뿌요가 천장을 침)
+	public void checkGameOver() { // 寃뚯엫 �삤踰� 泥섎━(肉뚯슂媛� 泥쒖옣�쓣 移�)
 
 		// gameStatus = 0;
 		// loop = false;
 	}
 
-	// private void createPuyo(Graphics g) { // 다음 뿌요 생성(아직 대기상태)
-	// 나중에 구현 일단 아래걸로 바로 시작위치에 생성하기
+	// private void createPuyo(Graphics g) { // �떎�쓬 肉뚯슂 �깮�꽦(�븘吏� ��湲곗긽�깭)
+	// �굹以묒뿉 援ы쁽 �씪�떒 �븘�옒嫄몃줈 諛붾줈 �떆�옉�쐞移섏뿉 �깮�꽦�븯湲�
 	// }
 
-	public void dropPuyo() { // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
+	public void dropPuyo() { // �떎�쓬 肉뚯슂 �뱶�엻(��湲곗긽�깭�뿉�꽌 爰쇰궡�꽌 �굺�븯)
 		curP1 = (int) (Math.random() * 5 + 1);
 		curP2 = (int) (Math.random() * 5 + 1);
 		curX = startX;
@@ -755,7 +763,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		curShape = 0;
 	}
 
-	public void removePuyo(int x, int y) { // 뿌요 제거
+	public void removePuyo(int x, int y) { // 肉뚯슂 �젣嫄�
 		myField[x][y] = 0;
 		comboCount++;
 	}
@@ -791,11 +799,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			}
 			break;
 		}
-
-		roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+		if(gameStatus==1) {
+			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+		}
 	}
 
-	public void keyProcess() { // 뿌요 이동
+	public void keyProcess() { // 肉뚯슂 �씠�룞
 		switch (gameStatus) {
 		case 0:
 			break;
@@ -865,16 +874,25 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					}
 					break;
 				}
+//				if(gameStatus==1) {
+//					String msg="";
+//					for (int i = 0; i < 14; i++) {
+//						for (int j = 0; j < 8; j++) {
+//							msg+=myField[i][j]+" ";
+//						}
+//					}
+//					roomList.SendMessage(msg, "501");
+//				}
 				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
 				break;
 			}
 			if (!Thread.currentThread().isInterrupted()) {
-				try { // 키가 너무 빠르게 먹으면 안됨 딜레이
-					Thread.sleep(80); // 약간 0.05초는 너무 짧은 느낌?
+				try { // �궎媛� �꼫臾� 鍮좊Ⅴ寃� 癒뱀쑝硫� �븞�맖 �뵜�젅�씠
+					Thread.sleep(80); // �빟媛� 0.05珥덈뒗 �꼫臾� 吏㏃� �뒓�굦?
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
 			}
 		}
 	}
-} // 전체 클래스 끝
+} // �쟾泥� �겢�옒�뒪 �걹
