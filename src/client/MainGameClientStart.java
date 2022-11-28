@@ -6,7 +6,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.lang.reflect.Field;
 import java.awt.event.ActionEvent;
 
 public class MainGameClientStart extends JFrame {
@@ -58,7 +57,7 @@ public class MainGameClientStart extends JFrame {
 	
 		contentPane.add(btnStart);
 		
-		JLabel lblNewLabel = new JLabel("¾ÆÀÌµð");
+		JLabel lblNewLabel = new JLabel("ê²Œìž„ì‹œìž‘");
 		lblNewLabel.setBounds(606, 62, 82, 33);
 		contentPane.add(lblNewLabel);
 		
@@ -103,7 +102,7 @@ public class MainGameClientStart extends JFrame {
 		btnStart.addMouseListener(new ButtonAction());
 	}
 	
-	class Myaction implements ActionListener // ³»ºÎÅ¬·¡½º·Î ¾×¼Ç ÀÌº¥Æ® Ã³¸® Å¬·¡½º
+	class Myaction implements ActionListener 
 	{
 		@Override
 		public void actionPerformed(ActionEvent e) {
