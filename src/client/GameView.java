@@ -398,50 +398,26 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				public void run() {
 					if (checkGravity == 1) {
 						checkGravity = 0;
-
-						for (int i = 11; i >= 0; i--) {
-							for (int j = 1; j < 7; j++) {
-								if (myField[i + 1][j] == 0 && gameStatus == 1) {
-									if (myField[i][j] > 0) {
-										myField[i + 1][j] = myField[i][j];
-										myField[i][j] = 0;
-									}
-									checkGravity = 1;
-								}
-							}
-						}
-
+						gravity();
 						if (checkGravity == 0)
 							checkGravity = 2; // 以묐젰 �쁺�뼢�쓣 �떎 諛쏆쑝硫� 泥댁씤 猷� �떎�뻾
 					}
 				}
 			};
-				gravityTimer.scheduleAtFixedRate(gravityTask, puyoDelay, 150);
-				
-				Timer enemyGravityTimer = new Timer();
-				TimerTask enemyGravityTask = new TimerTask() {
-					public void run() {
-						if (enemyCheckGravity == 1) {
-							enemyCheckGravity = 0;
-
-							for (int i = 11; i >= 0; i--) {
-								for (int j = 1; j < 7; j++) {
-									if (enemyField[i + 1][j] == 0 && gameStatus == 1) {
-										if (enemyField[i][j] > 0) {
-											enemyField[i + 1][j] = enemyField[i][j];
-											enemyField[i][j] = 0;
-										}
-										enemyCheckGravity = 1;
-									}
-								}
-							}
-
-							if (enemyCheckGravity == 0)
-								enemyCheckGravity = 2; // 以묐젰 �쁺�뼢�쓣 �떎 諛쏆쑝硫� 泥댁씤 猷� �떎�뻾
-						}
+			gravityTimer.scheduleAtFixedRate(gravityTask, puyoDelay, 200);
+			
+			Timer enemyGravityTimer = new Timer();
+			TimerTask enemyGravityTask = new TimerTask() {
+				public void run() {
+					if (enemyCheckGravity == 1) {
+						enemyCheckGravity = 0;
+						enemyGravity();
+						if (enemyCheckGravity == 0)
+							enemyCheckGravity = 2; // 以묐젰 �쁺�뼢�쓣 �떎 諛쏆쑝硫� 泥댁씤 猷� �떎�뻾
 					}
+				}
 			};
-			enemyGravityTimer.scheduleAtFixedRate(enemyGravityTask, puyoDelay, 150);
+			enemyGravityTimer.scheduleAtFixedRate(enemyGravityTask, puyoDelay, 200);
 			
 
 			while (loop) {
@@ -467,8 +443,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case 1:
 			if (checkDropDone()) {
-				roomList.SendMessage("", "502");
-				roomList.SendMessage("", "505");
+				roomList.SendMessage("502", "502");
+				roomList.SendMessage("505", "505");
 				dropPuyo();
 				checkChainRule();
 				if (checkGravity == 2) {
@@ -476,28 +452,18 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					checkGravity = 0;
 				}
 			}
-		}
-	}
-
-	public boolean checkEnemyDropDone() {
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // �쟻 肉뚯슂�룄 媛숈씠 �솗�씤
-			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
-				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
-				enemyField[enemySubY][enemySubX] = enemyCurP2;
-				return true;
+			if (checkGravity == 2) {
+				checkChainRule();
+				checkGravity = 0;
+			}
+			if (enemyCheckGravity == 2) {
+				enemyCheckChainRule();
+				enemyCheckGravity = 0;
 			}
 		}
-		return false;
 	}
 
 	public boolean checkDropDone() { // �굺�븯以묒씠�뜕 肉뚯슂媛� 硫덉톬�뒗吏� �솗�씤(諛붾떏�뿉 �떯�븯�뒗吏�)
-
-		if (enemyField[enemyCurY + 1][enemyCurX] != 0 || enemyCurY + 1 == enemySubY) { // �쟻 肉뚯슂�룄 媛숈씠 �솗�씤
-			if (enemyField[enemySubY + 1][enemySubX] != 0 || enemySubY + 1 == enemyCurY) {
-				enemyField[enemyCurY][enemyCurX] = enemyCurP1;
-				enemyField[enemySubY][enemySubX] = enemyCurP2;
-			}
-		}
 
 		if (myField[curY + 1][curX] != 0 || curY + 1 == subY) {
 			if (myField[subY + 1][subX] != 0 || subY + 1 == curY) {
@@ -645,20 +611,46 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	}
 
 	public void gravity() { // �븘�옒�뿉 �엳�뒗 肉뚯슂媛� �뙆愿대맆 �떆 �쐞�뿉 �엳�뒗 肉뚯슂�뱾�� 鍮꾩뼱�엳�뒗 怨듦컙�쑝濡� �궡�젮�샂
-
+		for (int i = 11; i >= 0; i--) {
+			for (int j = 1; j < 7; j++) {
+				if (myField[i + 1][j] == 0 && gameStatus == 1) {
+					if (myField[i][j] > 0) {
+						myField[i + 1][j] = myField[i][j];
+						myField[i][j] = 0;
+					}
+					checkGravity = 1;
+				}
+			}
+		}
+	}
+	
+	public void enemyGravity() {
+		for (int i = 11; i >= 0; i--) {
+			for (int j = 1; j < 7; j++) {
+				if (enemyField[i + 1][j] == 0 && gameStatus == 1) {
+					if (enemyField[i][j] > 0) {
+						enemyField[i + 1][j] = enemyField[i][j];
+						enemyField[i][j] = 0;
+					}
+					enemyCheckGravity = 1;
+				}
+			}
+		}
 	}
 
 	public void cutConnect() {
 		myField[curY][curX] = curP1;
 		myField[subY][subX] = curP2;
-		checkGravity = 1;
+		checkGravity = 2;
+		gravity();
 		dropPuyo();
 	}
 
 	public void enemyCutConnect() {
 		enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 		enemyField[enemySubY][enemySubX] = enemyCurP2;
-		enemyCheckGravity=1;
+		enemyCheckGravity = 2;
+		enemyGravity();
 	}
 
 	public void keyPressed(KeyEvent e) {
@@ -669,7 +661,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case KeyEvent.VK_DOWN:
 			keybuff |= DOWN_PRESSED;
-			puyoDelay = 300;
 			break;
 		case KeyEvent.VK_LEFT:
 			keybuff |= LEFT_PRESSED;
@@ -689,7 +680,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case KeyEvent.VK_DOWN:
 			keybuff &= ~DOWN_PRESSED;
-			puyoDelay = 1000;
 			break;
 		case KeyEvent.VK_LEFT:
 			keybuff &= ~LEFT_PRESSED;
