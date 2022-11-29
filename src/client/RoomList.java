@@ -6,12 +6,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Vector;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -37,6 +43,7 @@ public class RoomList extends JFrame {
 	private String port_no;
 	private RoomList thisRoomList;
 	private GameView view;
+	private Clip clip;
 	/**
 	 * Create the frame.
 	 */
@@ -142,6 +149,32 @@ public class RoomList extends JFrame {
 		}
 		//view.setFocusable(true);
 		SendMessage("", "304");
+		backGroundMusic();
+	}
+	
+	public void backGroundMusic() {
+      File bgm;
+      AudioInputStream stream;
+      AudioFormat format;
+      DataLine.Info info;
+      
+      bgm = new File("src/resource/roombgm.MID"); // 사용시에는 개별 폴더로 변경할 것
+    // 현재 파일 없는 상태, 게임에서 추출해서 넣은뒤 수정하겠음
+      
+      
+      try {
+             stream = AudioSystem.getAudioInputStream(bgm);
+             format = stream.getFormat();
+             info = new DataLine.Info(Clip.class, format);
+             clip = (Clip)AudioSystem.getLine(info);
+             clip.open(stream);
+             clip.start(); 
+             clip.loop(100); 
+             
+      } catch (Exception e) {
+         System.out.println("err : " + e);
+     }
+
 	}
 	
 	// Server Message를 수신해서 화면에 표시
@@ -178,6 +211,7 @@ public class RoomList extends JFrame {
 							view=new GameView(UserName, ip_addr, port_no,thisRoomList,cm.data);
 							view.requestFocus();
 							setVisible(false);
+							clip.stop();
 						}else if(cm.code.matches("305")) {
 							for(int i=0;i<roomList.size();i++) {
 								if(roomList.get(i).startsWith(cm.data)) {
@@ -236,7 +270,7 @@ public class RoomList extends JFrame {
 				txtInput.setText(""); // 메세지를 보내고 나면 메세지 쓰는창을 비운다.
 				txtInput.requestFocus(); // 메세지를 보내고 커서를 다시 텍스트 필드로 위치시킨다
 				setVisible(false);
-				
+				clip.stop();
 			}
 		}
 	}

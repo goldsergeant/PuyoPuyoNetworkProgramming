@@ -1,11 +1,17 @@
 package client;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.awt.event.ActionEvent;
 
 public class MainGameClientStart extends JFrame {
@@ -17,6 +23,7 @@ public class MainGameClientStart extends JFrame {
 	private JTextField txtPortNumber;
 	private JLabel titleLabel;
 	private ImageIcon title;
+	private Clip clip;
 
 	/**
 	 * Launch the application.
@@ -57,7 +64,7 @@ public class MainGameClientStart extends JFrame {
 	
 		contentPane.add(btnStart);
 		
-		JLabel lblNewLabel = new JLabel("뿌요뿌요");
+		JLabel lblNewLabel = new JLabel("user name");
 		lblNewLabel.setBounds(606, 62, 82, 33);
 		contentPane.add(lblNewLabel);
 		
@@ -100,8 +107,32 @@ public class MainGameClientStart extends JFrame {
 		txtPortNumber.addActionListener(action);
 		btnStart.addActionListener(action);
 		btnStart.addMouseListener(new ButtonAction());
+		backGroundMusic();
 	}
-	
+	public void backGroundMusic() {
+      File bgm;
+      AudioInputStream stream;
+      AudioFormat format;
+      DataLine.Info info;
+      
+      bgm = new File("src/resource/start.MID"); // 사용시에는 개별 폴더로 변경할 것
+    // 현재 파일 없는 상태, 게임에서 추출해서 넣은뒤 수정하겠음
+      
+      
+      try {
+             stream = AudioSystem.getAudioInputStream(bgm);
+             format = stream.getFormat();
+             info = new DataLine.Info(Clip.class, format);
+             clip = (Clip)AudioSystem.getLine(info);
+             clip.open(stream);
+             clip.start(); 
+             clip.loop(100); 
+             
+      } catch (Exception e) {
+         System.out.println("err : " + e);
+     }
+
+	}
 	class Myaction implements ActionListener 
 	{
 		@Override
@@ -111,6 +142,7 @@ public class MainGameClientStart extends JFrame {
 			String port_no = txtPortNumber.getText().trim();
 			new RoomList(username, ip_addr, port_no);
 			setVisible(false);
+			clip.stop();
 		}
 	}
 	

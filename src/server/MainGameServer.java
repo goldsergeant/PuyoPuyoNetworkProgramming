@@ -106,13 +106,13 @@ public class MainGameServer extends JFrame {
 					AppendText("Waiting new clients ...");
 					client_socket = socket.accept();
 
-					AppendText("ìƒˆë¡œìš´ ì‚¬ìš©ì from " + client_socket);
+					AppendText("»õ·Î¿î »ç¿ëÀÚ from " + client_socket);
 
 					UserService new_user = new UserService(client_socket);
 					userVec.add(new_user);
 					new_user.start();
 					userStatus.put(new_user.userName, "O");
-					AppendText("í˜„ì¬ ì‚¬ìš©ìì˜ ìˆ˜: " + userVec.size());
+					AppendText("ÇöÀç »ç¿ëÀÚÀÇ ¼ö: " + userVec.size());
 				} catch (IOException e) {
 					AppendText("accept() error");
 				}
@@ -154,7 +154,7 @@ public class MainGameServer extends JFrame {
 		public void Logout() {
 			userVec.removeElement(this);
 			this.client_socket = null;
-			AppendText("ì‚¬ìš©ì " + "[" + userName + "] ê°€ í‡´ì¥í•˜ì˜€ìŠµë‹ˆë‹¤. ë‚¨ì€ ì‚¬ìš©ì ìˆ˜: " + userVec.size());
+			AppendText("»ç¿ëÀÚ " + "[" + userName + "] °¡ ÅğÀåÇÏ¿´½À´Ï´Ù. ³²Àº »ç¿ëÀÚ ¼ö: " + userVec.size());
 		}
 
 		public void WriteAllObject(GameMsg obj) {
@@ -230,7 +230,7 @@ public class MainGameServer extends JFrame {
 				AppendObject(cm);
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
-					AppendText("ìƒˆë¡œìš´ ì‚¬ìš©ì " + userName + " ì…ì¥");
+					AppendText("»õ·Î¿î »ç¿ëÀÚ " + userName + " ÀÔÀå");
 					String msg = "";
 					for (String key : whoRoomMade.keySet()) {
 						msg += key + " " + whoRoomMade.get(key) + " ";
@@ -250,7 +250,7 @@ public class MainGameServer extends JFrame {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
 						whoRoomMade.put(cm.data.split(" ")[0], cm.userName);
-						AppendText(String.format("ë°© ìƒì„±: %s", cm.data));
+						AppendText(String.format("¹æ »ı¼º: %s", cm.data));
 					}
 					WriteAllObject(cm);
 				} else if (cm.code.matches("304")) {

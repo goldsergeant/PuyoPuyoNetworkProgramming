@@ -231,8 +231,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				setVisible(false);
 				gameStatus = 0;
 				mainWork.interrupt();
-				// clip.close();  음악, 나중에 활성화시켜줄것
+				clip.close(); 
 				roomList.setVisible(true);
+				roomList.backGroundMusic();
 			}
 		});
 		endButton.setBounds(880, 459, 69, 40);
@@ -249,28 +250,63 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	}
 
 	public void backGroundMusic() {
-//        File bgm;
-//        AudioInputStream stream;
-//        AudioFormat format;
-//        DataLine.Info info;
-//        
-//        bgm = new File("src/resource/bgm.wav"); // 사용시에는 개별 폴더로 변경할 것
-//      // 현재 파일 없는 상태, 게임에서 추출해서 넣은뒤 수정하겠음
-//        
-//        
-//        try {
-//               stream = AudioSystem.getAudioInputStream(bgm);
-//               format = stream.getFormat();
-//               info = new DataLine.Info(Clip.class, format);
-//               clip = (Clip)AudioSystem.getLine(info);
-//               clip.open(stream);
-//              // clip.start(); 
-//              // clip.loop(100); 
-//               
-//        } catch (Exception e) {
-//           System.out.println("err : " + e);
-//       }
+        File bgm;
+        AudioInputStream stream;
+        AudioFormat format;
+        DataLine.Info info;
+        
+        bgm = new File("src/resource/gamebgm.MID"); // 사용시에는 개별 폴더로 변경할 것
+        
+        
+        try {
+               stream = AudioSystem.getAudioInputStream(bgm);
+               format = stream.getFormat();
+               info = new DataLine.Info(Clip.class, format);
+               clip = (Clip)AudioSystem.getLine(info);
+               clip.open(stream);
+               clip.start(); 
+               clip.loop(100); 
+               
+        } catch (Exception e) {
+           System.out.println("err : " + e);
+       }
 
+	}
+	
+	public void destroyMusic() {
+        File music;
+        Clip clip_d = null;
+        AudioInputStream stream_d;
+        AudioFormat format_d;
+        DataLine.Info info_d;
+        switch (comboCount) {
+		case 1:
+			 music = new File("src/resource/combo1.WAV"); // 사용시에는 개별 폴더로 변경할 것	
+			break;
+		case 2:
+			music = new File("src/resource/combo2.WAV");
+			break;
+		case 3:
+			music = new File("src/resource/combo3.WAV");
+		default:
+			music = new File("src/resource/combo3.WAV");
+			break;
+		}
+        
+        
+        try {
+               stream_d = AudioSystem.getAudioInputStream(music);
+               format_d = stream_d.getFormat();
+               info_d = new DataLine.Info(Clip.class, format_d);
+               clip_d = (Clip)AudioSystem.getLine(info_d);
+               clip_d.open(stream_d);
+               clip_d.start(); 
+               
+        } catch (Exception e) {
+           System.out.println("err : " + e);
+       }
+        
+       // clip_d.close();
 	}
 
 	public void readMessage(GameMsg cm) {
@@ -279,8 +315,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			setVisible(false);
 			gameStatus = 0;
 			mainWork.interrupt();
-			// clip.close(); 나중에 실행
+			clip.close(); 
 			roomList.setVisible(true);
+			roomList.backGroundMusic();
 		} else if (cm.code.matches("400")) {
 			initGame();
 		} else if (cm.code.matches("500")) {
@@ -342,7 +379,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		comboCount = 0;
 		delay = 17; // 17 / 1000 = 58프레임
 		puyoDelay = 2000; // 2초 간격으로 자연 드랍
-		// backGroundMusic();
+		backGroundMusic();
 		gameStatus = 1;
 		dropPuyo();
 		mainWork = new Thread(this);
@@ -405,6 +442,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public void process() {// 각종 로직 처리
 		switch (gameStatus) {
 		case 0:
+			clip.stop();
 			break;
 		case 1:
 			if (checkDropDone()) {
@@ -774,6 +812,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public void removePuyo(int x, int y) { // 뿌요 제거
 		myField[x][y] = 0;
 		comboCount++;
+		System.out.println(comboCount);
+		destroyMusic();
 	}
 
 	public void turnPuyo() {
