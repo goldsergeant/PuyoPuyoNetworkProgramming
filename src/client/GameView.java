@@ -463,7 +463,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 
-	public void checkChainRule() { // 파괴로직 실행
+	public void checkChainRule() {
 		clearVisitedField();
 		visitedX.clear();
 		visitedY.clear();
@@ -477,9 +477,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						visitedX.clear();
 						visitedY.clear();
 					}
-				} // 방문, 뿌요존재확인
-			} //y for 문
-		} // x for문
+				}
+			}
+		}
 	}
 
 	public void enemyCheckChainRule() {
