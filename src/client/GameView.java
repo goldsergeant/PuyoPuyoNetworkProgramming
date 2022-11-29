@@ -64,10 +64,14 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int myScore, enemyScore; // 나와 상대방 점수
 	public int comboCount; // 콤보파괴시 증가하여 방해뿌요 생성 후 0으로 초기화
 	public int startX, startY; // 새로 뿌요 생성시 위치
+	public int nextP1, nextP2; // 다음번 생성 될 뿌요 (대기상태)
+	public int enemyNextP1, enemyNextP2;
 
 	public int curX, curY; // 현재 조작중인 뿌요의 위치
 	public int subX, subY; // 조작중인 두번째 뿌요의 위치
 	public int curP1, curP2;  // 현재 조작중인 뿌요의 종류
+	public int myFieldBlock; // 상대방이 공격하여 내 필드에 대기중인 방해 뿌요 수
+	public int enemyFieldBlock;
 
 	public int enemyCurX, enemyCurY;
 	public int enemySubX, enemySubY;
@@ -119,13 +123,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		public Graphics gc;  // 더블버퍼링용 그래픽 컨텍스트
 		public Image doubleBuffer;  // 더블버퍼링용 백버퍼
 		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage();// 배경이미지
+		public Image mapFrame = new ImageIcon("src/resource/mapFrame.png").getImage();
 		public Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
 				null,
 				new ImageIcon("src/resource/puyoRed.png").getImage(),
 				new ImageIcon("src/resource/puyoYellow.png").getImage(),
 				new ImageIcon("src/resource/puyoGreen.png").getImage(),
 				new ImageIcon("src/resource/puyoBlue.png").getImage(),
-				new ImageIcon("src/resource/puyoPurple.png").getImage()
+				new ImageIcon("src/resource/puyoPurple.png").getImage(),
+				new ImageIcon("src/resource/puyoBlock.png").getImage()
 		};
 
 		public GameScreen(GameView gameView) {
@@ -148,6 +154,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					}
 				}
 			}
+			gc.drawImage(puyoTypeImg[nextP1], 256, 128, this);
+			gc.drawImage(puyoTypeImg[nextP2], 256, 96, this);
+			gc.drawImage(puyoTypeImg[enemyNextP1], 352, 128, this);
+			gc.drawImage(puyoTypeImg[enemyNextP2], 352, 96, this);
 		}
 
 		public void drawControlPuyo() {
@@ -155,6 +165,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
+		}
+		
+		public void drawMapFrame() {
+			gc.drawImage(mapFrame, 0, 0, this);
 		}
 
 		public void paint(Graphics g) {
@@ -186,6 +200,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				drawBackGround();
 				drawField();
 				drawControlPuyo();
+				drawMapFrame();
 				break;
 			}
 		}
@@ -268,8 +283,12 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			roomList.setVisible(true);
 		} else if (cm.code.matches("400")) {
 			initGame();
+		} else if (cm.code.matches("500")) {
+			String enemyInformation[] = cm.data.split(" "); 
+			enemyNextP1 = Integer.parseInt(enemyInformation[0]);
+			enemyNextP2 = Integer.parseInt(enemyInformation[1]);
 		} else if (cm.code.matches("501")) {
-			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby 순서
+			String enemyInformation[] = cm.data.split(" "); 
 			enemyCurP1 = Integer.parseInt(enemyInformation[0]);
 			enemyCurP2 = Integer.parseInt(enemyInformation[1]);
 			enemyCurX = Integer.parseInt(enemyInformation[2]);
@@ -277,7 +296,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemySubX = Integer.parseInt(enemyInformation[4]);
 			enemySubY = Integer.parseInt(enemyInformation[5]);
 		} else if (cm.code.matches("502")) {
-			String enemyInformation[] = cm.data.split(" "); // p1 p2 curx cury subx suby 순서
+			String enemyInformation[] = cm.data.split(" ");
 			enemyCurP1 = Integer.parseInt(enemyInformation[0]);
 			enemyCurP2 = Integer.parseInt(enemyInformation[1]);
 			enemyCurX = Integer.parseInt(enemyInformation[2]);
@@ -287,6 +306,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 			enemyField[enemySubY][enemySubX] = enemyCurP2;
 			enemyCheckGravity = 1;
+		} else if (cm.code.matches("503")) {
+			myFieldBlock += Integer.parseInt(cm.data);
+		} else if (cm.code.matches("504")) {
+			enemyFieldBlock += Integer.parseInt(cm.data);
 		}
 	}
 
@@ -304,10 +327,14 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		visitedY.clear();
 		enemyVisitedX.clear();
 		enemyVisitedY.clear();
+		myFieldBlock = 0;
+		enemyFieldBlock = 0;
 		myScore = 0;
 		enemyScore = 0;
 		startX = 4;
 		startY = 1;
+		nextP1 = (int) (Math.random() * 5 + 1);
+		nextP2 = (int) (Math.random() * 5 + 1);
 		destroyCount = 0;
 		enemyDestroyCount=0;
 		checkGravity = 0;
@@ -336,12 +363,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			TimerTask gravityTask = new TimerTask() {
 				public void run() {
 					if (checkGravity == 1) {
-						//while (checkGravity == 1) {
-							checkGravity = 0;
-							gravity();
-							if (checkGravity == 0)
-								checkChainRule();
-						//}
+						checkGravity = 0;
+						gravity();
+						if (checkGravity == 0)
+							checkChainRule();
 					}
 				}
 			};
@@ -351,12 +376,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			TimerTask enemyGravityTask = new TimerTask() {
 				public void run() {
 					if (enemyCheckGravity == 1) {
-						//while (enemyCheckGravity == 1) {
-							enemyCheckGravity = 0;
-							enemyGravity();
-							if (enemyCheckGravity == 0)
-								enemyCheckChainRule();	
-						//}
+						enemyCheckGravity = 0;
+						enemyGravity();
+						if (enemyCheckGravity == 0)
+							enemyCheckChainRule();	
 					}
 				}
 			};
@@ -385,6 +408,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case 1:
 			if (checkDropDone()) {
+				while (myFieldBlock > 0) {
+					roomList.SendMessage(String.valueOf(flushBlock()), "504");
+					gravity();
+				}
 				checkChainRule();
 				dropPuyo();
 			}
@@ -393,7 +420,33 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				dropPuyo();
 				controlPuyoCut = 0;
 			}
+			while (enemyFieldBlock > 0) {
+				enemyFlushBlock();
+				enemyGravity();
+			}
 		}
+	}
+	
+	public int flushBlock() { // 대기중이던 방해 뿌요 공격
+		int temp = 0;
+		for (int i = 1; i < 7; i++) {
+			if (myFieldBlock == 0) break;
+			myField[startY - 1][i] = 6;
+			myFieldBlock--;
+			temp++;
+		}
+		return temp;
+	}
+	
+	public int enemyFlushBlock() {
+		int temp = 0;
+		for (int i = 1; i < 7; i++) {
+			if (enemyFieldBlock == 0) break;
+			enemyField[startY - 1][i] = 6;
+			enemyFieldBlock--;
+			temp++;
+		}
+		return temp;
 	}
 
 	public boolean checkDropDone() { // 낙하중이던 뿌요가 멈췄는지 확인(바닥에 닿았는지)
@@ -410,13 +463,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		return false;
 	}
 
-	public void checkChainRule() { // 파괴로직 실행
+	public void checkChainRule() {
 		clearVisitedField();
 		visitedX.clear();
 		visitedY.clear();
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
-				if (myField[i][j] != 0 && !visited[i][j]) {
+				if (myField[i][j] != 0 && myField[i][j] != 6 && !visited[i][j]) {
 					destroyCount = 0;
 					if (puyoDestroy(i, j, myField[i][j])) {
 						if (destroyCount > 3)
@@ -424,9 +477,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						visitedX.clear();
 						visitedY.clear();
 					}
-				} // 방문, 뿌요존재확인
-			} //y for 문
-		} // x for문
+				}
+			}
+		}
 	}
 
 	public void enemyCheckChainRule() {
@@ -435,7 +488,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		enemyVisitedY.clear();
 		for (int i = 0; i < 13; i++) {
 			for (int j = 1; j < 7; j++) {
-				if (enemyField[i][j] != 0 && !enemyVisited[i][j]) {
+				if (enemyField[i][j] != 0 && enemyField[i][j] != 6 && !enemyVisited[i][j]) {
 					enemyDestroyCount = 0;
 					if (enemyPuyoDestroy(i, j, enemyField[i][j])) {
 						if (enemyDestroyCount > 3)
@@ -456,15 +509,31 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		visitedY.add(y);
 		if (!visited[x + 1][y] && myField[x + 1][y] == puyo_type) {
 			puyoDestroy(x + 1, y, puyo_type);
+		} else if (!visited[x + 1][y] && myField[x + 1][y] == 6) {
+			visited[x + 1][y] = true;
+			visitedX.add(x + 1);
+			visitedY.add(y);
 		}
 		if (!visited[x][y + 1] && myField[x][y + 1] == puyo_type) {
 			puyoDestroy(x, y + 1, puyo_type);
+		} else if (!visited[x][y + 1] && myField[x][y + 1] == 6) {
+			visited[x][y + 1] = true;
+			visitedX.add(x);
+			visitedY.add(y + 1);
 		}
 		if (x != 0 && !visited[x - 1][y] && myField[x - 1][y] == puyo_type) {
 			puyoDestroy(x - 1, y, puyo_type);
+		} else if ( x != 0 && !visited[x - 1][y] && myField[x - 1][y] == 6) {
+			visited[x - 1][y] = true;
+			visitedX.add(x - 1);
+			visitedY.add(y);
 		}
 		if (!visited[x][y - 1] && myField[x][y - 1] == puyo_type) {
 			puyoDestroy(x, y - 1, puyo_type);
+		} else if (!visited[x][y - 1] && myField[x][y - 1] == 6) {
+			visited[x][y - 1] = true;
+			visitedX.add(x);
+			visitedY.add(y - 1);
 		}
 		return true;
 	}
@@ -477,15 +546,31 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		enemyVisitedY.add(y);
 		if (!enemyVisited[x + 1][y] && enemyField[x + 1][y] == puyo_type) {
 			enemyPuyoDestroy(x + 1, y, puyo_type);
+		} else if (!enemyVisited[x + 1][y] && enemyField[x + 1][y] == 6) {
+			enemyVisited[x + 1][y] = true;
+			enemyVisitedX.add(x + 1);
+			enemyVisitedY.add(y);
 		}
 		if (!enemyVisited[x][y + 1] && enemyField[x][y + 1] == puyo_type) {
 			enemyPuyoDestroy(x, y + 1, puyo_type);
+		} else if (!enemyVisited[x][y + 1] && enemyField[x][y + 1] == 6) {
+			enemyVisited[x][y + 1] = true;
+			enemyVisitedX.add(x);
+			enemyVisitedY.add(y + 1);
 		}
 		if (x != 0 && !enemyVisited[x - 1][y] && enemyField[x - 1][y] == puyo_type) {
 			enemyPuyoDestroy(x - 1, y, puyo_type);
+		} else if ( x != 0 && !enemyVisited[x - 1][y] && enemyField[x - 1][y] == 6) {
+			enemyVisited[x - 1][y] = true;
+			enemyVisitedX.add(x - 1);
+			enemyVisitedY.add(y);
 		}
 		if (!enemyVisited[x][y - 1] && enemyField[x][y - 1] == puyo_type) {
 			enemyPuyoDestroy(x, y - 1, puyo_type);
+		} else if (!enemyVisited[x][y - 1] && enemyField[x][y - 1] == 6) {
+			enemyVisited[x][y - 1] = true;
+			enemyVisitedX.add(x);
+			enemyVisitedY.add(y - 1);
 		}
 		return true;
 	}
@@ -497,6 +582,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 
 		myScore += destroyCount * 10;
+		if (myFieldBlock > 0) {
+			myFieldBlock -= destroyCount;
+			if (myFieldBlock < 0) {
+				roomList.SendMessage(String.valueOf(Math.abs(myFieldBlock)), "503");
+				myFieldBlock = 0;
+			}
+		} else {
+			roomList.SendMessage(String.valueOf(destroyCount), "503");
+		}
 		clearVisitedField();
 		checkGravity = 1;
 	}
@@ -642,25 +736,39 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 	public void checkGameOver() {  // 게임 오버 처리(뿌요가 천장을 침)
 
-//		if (myField[startY][startX] != 0) {
-//			gameStatus = 0;
-//			loop = false;	
-//		}
+		gameStatus = 0;
+		loop = false;
 	}
 
-	// private void createPuyo(Graphics g) { // 다음 뿌요 생성(아직 대기상태)
-	// 나중에 구현 일단 아래걸로 바로 시작위치에 생성하기
-	// }
-
 	public void dropPuyo() {  // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
-		curP1 = (int) (Math.random() * 5 + 1);
-		curP2 = (int) (Math.random() * 5 + 1);
-		curX = startX;
-		curY = startY;
-		subX = startX;
-		subY = startY - 1;
+		curP1 = nextP1;
+		curP2 = nextP2;
+		nextP1 = (int)(Math.random() * 5 + 1);
+		nextP2 = (int)(Math.random() * 5 + 1);
+		roomList.SendMessage(nextP1 + " " + nextP2, "500");
 		curShape = 0;
-		roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+		
+		if (myField[startY][startX] == 0) {
+			curX = startX;
+			curY = startY;
+			subX = startX;
+			subY = startY - 1;
+			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+		} else if (myField[startY][startX - 1] == 0) {
+			curX = startX - 1;
+			curY = startY;
+			subX = startX - 1;
+			subY = startY - 1;
+			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+		} else if (myField[startY][startX + 1] == 0) {
+			curX = startX + 1;
+			curY = startY;
+			subX = startX + 1;
+			subY = startY - 1;
+			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+		} else {
+			checkGameOver();
+		}
 	}
 
 	public void removePuyo(int x, int y) { // 뿌요 제거
@@ -776,8 +884,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 			if (!Thread.currentThread().isInterrupted()) {
-				try {  // 키가 너무 빠르게 먹으면 안됨 딜레이
-					Thread.sleep(100); 
+				try {  // 키가 너무 빠르게 먹으면 안됨, 딜레이
+					Thread.sleep(80); 
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}

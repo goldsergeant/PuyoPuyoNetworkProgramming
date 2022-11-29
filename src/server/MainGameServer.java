@@ -30,6 +30,7 @@ public class MainGameServer extends JFrame {
 	public HashMap<String, Integer> roomMap = new HashMap<String, Integer>();
 	public HashMap<String, String> userLocation = new HashMap<String, String>();
 	public HashMap<String, String> whoRoomMade = new HashMap<String, String>();
+	
 
 	/**
 	 * Launch the application.
@@ -270,6 +271,13 @@ public class MainGameServer extends JFrame {
 						whoRoomMade.remove(cm.data);
 						WriteAllObject(new GameMsg("server", "305", cm.data));
 					}
+				} else if (cm.code.matches("500")) {
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+						}
+					}
 				} else if (cm.code.matches("501")) {
 					for (int i = 0; i < user_vc.size(); i++) {
 						UserService us = user_vc.get(i);
@@ -284,22 +292,21 @@ public class MainGameServer extends JFrame {
 							us.WriteGameMsg(cm);
 						}
 					}
-				} else if (cm.code.matches("505")) {
+				} else if (cm.code.matches("503")) {
 					for (int i = 0; i < user_vc.size(); i++) {
 						UserService us = user_vc.get(i);
 						if (us.userName.equals(userStatus.get(cm.userName))) {
 							us.WriteGameMsg(cm);
 						}
 					}
-				}else if(cm.code.matches("506")){
+				} else if (cm.code.matches("504")) {
 					for (int i = 0; i < user_vc.size(); i++) {
 						UserService us = user_vc.get(i);
 						if (us.userName.equals(userStatus.get(cm.userName))) {
 							us.WriteGameMsg(cm);
 						}
 					}
-				}
-				else if (cm.code.matches("900")) {
+				} else if (cm.code.matches("900")) {
 					Logout();
 					break;
 				} else if (cm.code.matches("301")) {
