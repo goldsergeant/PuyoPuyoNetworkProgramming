@@ -57,7 +57,7 @@ public class MainGameClientStart extends JFrame {
 	
 		contentPane.add(btnStart);
 		
-		JLabel lblNewLabel = new JLabel("게임시작");
+		JLabel lblNewLabel = new JLabel("�ѿ�ѿ�");
 		lblNewLabel.setBounds(606, 62, 82, 33);
 		contentPane.add(lblNewLabel);
 		
