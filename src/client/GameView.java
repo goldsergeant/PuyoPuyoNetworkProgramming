@@ -273,13 +273,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 	}
 	
-	public void destroyMusic() {
+	public void destroyMusic(int msg) {
         File music;
         Clip clip_d = null;
         AudioInputStream stream_d;
         AudioFormat format_d;
         DataLine.Info info_d;
-        switch (comboCount) {
+        switch (msg) {
 		case 1:
 			 music = new File("src/resource/combo1.WAV"); // 사용시에는 개별 폴더로 변경할 것	
 			break;
@@ -347,6 +347,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			myFieldBlock += Integer.parseInt(cm.data);
 		} else if (cm.code.matches("504")) {
 			enemyFieldBlock += Integer.parseInt(cm.data);
+		} else if(cm.code.matches("600")) {
+			destroyMusic(Integer.parseInt(cm.data));
 		}
 	}
 
@@ -446,6 +448,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			break;
 		case 1:
 			if (checkDropDone()) {
+				comboCount=0;
 				while (myFieldBlock > 0) {
 					roomList.SendMessage(String.valueOf(flushBlock()), "504");
 					gravity();
@@ -620,6 +623,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 
 		myScore += destroyCount * 10;
+		comboCount++;
+		roomList.SendMessage(Integer.toString(comboCount), "600");
 		if (myFieldBlock > 0) {
 			myFieldBlock -= destroyCount;
 			if (myFieldBlock < 0) {
@@ -812,8 +817,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public void removePuyo(int x, int y) { // 뿌요 제거
 		myField[x][y] = 0;
 		comboCount++;
-		System.out.println(comboCount);
-		destroyMusic();
 	}
 
 	public void turnPuyo() {

@@ -236,6 +236,8 @@ public class RoomList extends JFrame {
 							view.readMessage(cm);
 						}else if(cm.code.matches("504")) {
 							view.readMessage(cm);
+						}else if(cm.code.matches("600")) {
+							view.readMessage(cm);
 						}
 					} else
 						continue;
