@@ -92,6 +92,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 0, 0, 0, 0, 0, 0, 9 },
 			{ 9, 0, 0, 0, 0, 0, 0, 9 }, { 9, 9, 9, 9, 9, 9, 9, 9 } };
 
+	public int[] myBlockField = {0,0,0,0,0,0,0,0,0,0};
+	public int[] enemyBlockField = {0,0,0,0,0,0,0,0,0,0};
 	public int curShape; // 현재 조작중인 뿌요의 모양 (4가지) 순서대로 시계방향으로 회전
 	public int puyoType;
 	/**
@@ -116,12 +118,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int checkGravity; // 0:중력 X, 1: 중력 O
 	public int enemyCheckGravity;
 	public int controlPuyoCut; // 0: 기본(작동X), 1: 잘림
-
+	public Image bigPuyoImg= new ImageIcon("src/resource/bigPuyo.png").getImage();
+	public Image smallPuyoImg= new ImageIcon("src/resource/smallPuyo.png").getImage();
+	
 	class GameScreen extends Canvas {
 		
 		public GameView main;
 		public Graphics gc;  // 더블버퍼링용 그래픽 컨텍스트
 		public Image doubleBuffer;  // 더블버퍼링용 백버퍼
+		public Image doubleBuffer2;
 		public Image backGround = new ImageIcon("src/resource/backGround.png").getImage();// 배경이미지
 		public Image mapFrame = new ImageIcon("src/resource/mapFrame.png").getImage();
 		public Image[] puyoTypeImg = { // 0은 puyoType도 비어있음 이므로 사용하지 않는다
@@ -133,7 +138,55 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				new ImageIcon("src/resource/puyoPurple.png").getImage(),
 				new ImageIcon("src/resource/puyoBlock.png").getImage()
 		};
-
+		
+		public void drawBlockField(int myFieldBlock) {
+			int bigCount=myFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
+			int smallCount=myFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
+			int i;
+			for(i=0;i<bigCount&&i<myBlockField.length;i++) {
+				myBlockField[i]=2;
+			}
+			i++;
+			for(int j=0;j<smallCount&&i<myBlockField.length;j++ ) {
+				myBlockField[j]=1;
+			}
+			for(i=0;i<myBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
+				if(myBlockField[i]==2) {
+					if(gc!=null) {
+						gc.drawImage(bigPuyoImg, 16 * i, 30, this);
+					}
+				}else if(myBlockField[i]==1) {
+					if(gc!=null) {
+						gc.drawImage(smallPuyoImg, 16 * i, 30, this);
+					}
+				}
+			}
+			repaint();
+		}
+		
+		public void drawEnemyBlockField(int enemyFieldBlock) {
+			int bigCount=enemyFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
+			int smallCount=enemyFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
+			int i;
+			for(i=0;i<bigCount&&i<enemyBlockField.length;i++) {
+				enemyBlockField[i]=2;
+			}
+			i++;
+			for(int j=0;j<smallCount&&i<enemyBlockField.length;j++ ) {
+				enemyBlockField[j]=1;
+			}
+			for(i=0;i<enemyBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
+				if(enemyBlockField[i]==2) {
+					if(gc!=null) {
+						gc.drawImage(bigPuyoImg, 32*12+16 * i,30, this);
+					}
+				}else if(enemyBlockField[i]==1) {
+					if(gc!=null) {
+						gc.drawImage(smallPuyoImg,32*12+16 * i, 30, this);
+					}
+				}
+			}
+		}
 		public GameScreen(GameView gameView) {
 			this.main = gameView;
 			setLayout(null);
@@ -176,8 +229,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				doubleBuffer = createImage(640, 480);
 				if (doubleBuffer == null)
 					System.out.println("오프스크린 버퍼 생성 실패");
-				else
+				else {
 					gc = doubleBuffer.getGraphics();
+				}
 				return;
 			}
 			update(g);
@@ -201,6 +255,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				drawField();
 				drawControlPuyo();
 				drawMapFrame();
+				drawBlockField(enemyFieldBlock);
+				drawEnemyBlockField(enemyFieldBlock);
 				break;
 			}
 		}
@@ -345,8 +401,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyCheckGravity = 1;
 		} else if (cm.code.matches("503")) {
 			myFieldBlock += Integer.parseInt(cm.data);
+			gameScreen.drawBlockField(enemyFieldBlock);
 		} else if (cm.code.matches("504")) {
 			enemyFieldBlock += Integer.parseInt(cm.data);
+			gameScreen.drawEnemyBlockField(enemyFieldBlock);
 		} else if(cm.code.matches("600")) {
 			destroyMusic(Integer.parseInt(cm.data));
 		}
