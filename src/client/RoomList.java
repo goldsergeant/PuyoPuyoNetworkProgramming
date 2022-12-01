@@ -225,6 +225,8 @@ public class RoomList extends JFrame {
 							tempRefreshButton.doClick();
 						}else if(cm.code.matches("400")){
 							view.readMessage(cm);
+						}else if(cm.code.matches("401")){
+							view.readMessage(cm);
 						}else if(cm.code.matches("500")) {
 							view.readMessage(cm);
 						}else if(cm.code.matches("501")) {

@@ -293,7 +293,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		this.roomList = roomList;
 		this.roomName = roomName;
 		this.UserName = userName;
-		setBounds(100, 100, 980, 560);
+		setBounds(100, 100, 860, 560);
 		contentPane = new JPanel();
 		contentPane.setForeground(new Color(0, 0, 255));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -315,7 +315,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				roomList.backGroundMusic();
 			}
 		});
-		endButton.setBounds(880, 459, 69, 40);
+		endButton.setBounds(761, 440, 69, 40);
 		contentPane.add(endButton);
 
 		gameScreen = new GameScreen(this);
@@ -328,7 +328,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		textField.setHorizontalAlignment(SwingConstants.CENTER);
 		textField.setFont(new Font("휴먼편지체", Font.PLAIN, 24));
 		textField.setText("대기...");
-		textField.setBounds(784, 10, 170, 88);
+		textField.setBounds(660, 10, 170, 88);
 		contentPane.add(textField);
 		textField.setColumns(10);
 
@@ -408,6 +408,19 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			roomList.backGroundMusic();
 		} else if (cm.code.matches("400")) {
 			initGame();
+		} else if (cm.code.matches("401")) {
+			gameStatus = 0;
+			loop = false;
+			myBlockFieldClear();
+			enemyBlockFieldClear();
+			for (int i = 1; i < 7; i++) {
+				for (int j = 0; j < 13; j++) {
+					enemyField[j][i] = 0;
+				}
+			}
+			
+			//승리메세지...
+			
 		} else if (cm.code.matches("500")) {
 			String enemyInformation[] = cm.data.split(" "); 
 			enemyNextP1 = Integer.parseInt(enemyInformation[0]);
@@ -573,8 +586,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			myField[startY][i] = 6;
 			myFieldBlock--;
 			temp++;
-			if (myFieldBlock == 0)
+			if (myFieldBlock == 0) {
 				myBlockFieldClear();
+				break;
+			}
 		}
 		return temp;
 	}
@@ -585,8 +600,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyField[startY][i] = 6;
 			enemyFieldBlock--;
 			temp++;
-			if (enemyFieldBlock == 0)
+			if (enemyFieldBlock == 0) {
 				enemyBlockFieldClear();
+				break;
+			}
 		}
 		return temp;
 	}
@@ -891,11 +908,26 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 	public void checkGameOver() {  // 게임 오버 처리(뿌요가 천장을 침)
 
+		roomList.SendMessage("Game Over", "401");
 		gameStatus = 0;
 		loop = false;
+		myBlockFieldClear();
+		enemyBlockFieldClear();
+		for (int i = 1; i < 7; i++) {
+			for (int j = 0; j < 13; j++) {
+				myField[j][i] = 0;
+			}
+		}
+		
+		// 패배메세지...
+		
 	}
 
 	public void dropPuyo() {  // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
+		curX = startX;
+		curY = startY - 1;
+		subX = startX + 1;
+		subY = startY - 1;
 		curP1 = nextP1;
 		curP2 = nextP2;
 		nextP1 = (int)(Math.random() * 5 + 1);

@@ -106,13 +106,13 @@ public class MainGameServer extends JFrame {
 					AppendText("Waiting new clients ...");
 					client_socket = socket.accept();
 
-					AppendText("���ο� ����� from " + client_socket);
+					AppendText("새로운 참가자 from " + client_socket);
 
 					UserService new_user = new UserService(client_socket);
 					userVec.add(new_user);
 					new_user.start();
 					userStatus.put(new_user.userName, "O");
-					AppendText("���� ������� ��: " + userVec.size());
+					AppendText("현재 참가자 수: " + userVec.size());
 				} catch (IOException e) {
 					AppendText("accept() error");
 				}
@@ -154,7 +154,7 @@ public class MainGameServer extends JFrame {
 		public void Logout() {
 			userVec.removeElement(this);
 			this.client_socket = null;
-			AppendText("����� " + "[" + userName + "] �� �����Ͽ����ϴ�. ���� ����� ��: " + userVec.size());
+			AppendText("사용자 " + "[" + userName + "] 님이 입장했습니다: " + userVec.size());
 		}
 
 		public void WriteAllObject(GameMsg obj) {
@@ -230,7 +230,7 @@ public class MainGameServer extends JFrame {
 				AppendObject(cm);
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
-					AppendText("���ο� ����� " + userName + " ����");
+					AppendText("새로운 참가자 " + userName + " 입장");
 					String msg = "";
 					for (String key : whoRoomMade.keySet()) {
 						msg += key + " " + whoRoomMade.get(key) + " ";
@@ -250,7 +250,7 @@ public class MainGameServer extends JFrame {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
 						whoRoomMade.put(cm.data.split(" ")[0], cm.userName);
-						AppendText(String.format("�� ����: %s", cm.data));
+						AppendText(String.format("게임방 생성: %s", cm.data));
 					}
 					WriteAllObject(cm);
 				} else if (cm.code.matches("304")) {
@@ -270,6 +270,13 @@ public class MainGameServer extends JFrame {
 						roomMap.remove(cm.data);
 						whoRoomMade.remove(cm.data);
 						WriteAllObject(new GameMsg("server", "305", cm.data));
+					}
+				} else if (cm.code.matches("401")) {
+					for (int i = 0; i < user_vc.size(); i++) {
+						UserService us = user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+						}
 					}
 				} else if (cm.code.matches("500")) {
 					for (int i = 0; i < user_vc.size(); i++) {
