@@ -120,6 +120,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int controlPuyoCut; // 0: 기본(작동X), 1: 잘림
 	public Image bigPuyoImg= new ImageIcon("src/resource/bigPuyo.png").getImage();
 	public Image smallPuyoImg= new ImageIcon("src/resource/smallPuyo.png").getImage();
+	private JTextField textField;
 	
 	class GameScreen extends Canvas {
 		
@@ -294,6 +295,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		this.UserName = userName;
 		setBounds(100, 100, 980, 560);
 		contentPane = new JPanel();
+		contentPane.setForeground(new Color(0, 0, 255));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
@@ -320,6 +322,15 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		gameScreen.setFocusable(true);
 		gameScreen.setBounds(10, 10, 640, 480);
 		contentPane.add(gameScreen);
+		
+		textField = new JTextField();
+		textField.setForeground(new Color(255, 0, 0));
+		textField.setHorizontalAlignment(SwingConstants.CENTER);
+		textField.setFont(new Font("휴먼편지체", Font.PLAIN, 24));
+		textField.setText("대기...");
+		textField.setBounds(784, 10, 170, 88);
+		contentPane.add(textField);
+		textField.setColumns(10);
 
 		addKeyListener(this);
 		gameScreen.requestFocus();
@@ -445,6 +456,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		visitedY.clear();
 		enemyVisitedX.clear();
 		enemyVisitedY.clear();
+		textField.setText("게임 시작!!");
 		myFieldBlock = 0;
 		enemyFieldBlock = 0;
 		myScore = 0;
