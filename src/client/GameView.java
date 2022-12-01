@@ -409,8 +409,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		} else if (cm.code.matches("400")) {
 			initGame();
 		} else if (cm.code.matches("401")) {
-			gameStatus = 0;
-			loop = false;
 			myBlockFieldClear();
 			enemyBlockFieldClear();
 			for (int i = 1; i < 7; i++) {
@@ -418,8 +416,32 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 					enemyField[j][i] = 0;
 				}
 			}
+			gameStatus = 0;
+			loop = false;
 			
 			//승리메세지...
+			textField.setText("승리!!");
+			clip.stop();
+			File bgm;
+	        AudioInputStream stream;
+	        AudioFormat format;
+	        DataLine.Info info;
+	        
+	        bgm = new File("src/resource/win.MID"); // 사용시에는 개별 폴더로 변경할 것
+	        
+	        
+	        try {
+	               stream = AudioSystem.getAudioInputStream(bgm);
+	               format = stream.getFormat();
+	               info = new DataLine.Info(Clip.class, format);
+	               clip = (Clip)AudioSystem.getLine(info);
+	               clip.open(stream);
+	               clip.start(); 
+	               clip.loop(100); 
+	               
+	        } catch (Exception e) {
+	           System.out.println("err : " + e);
+	       }
 			
 		} else if (cm.code.matches("500")) {
 			String enemyInformation[] = cm.data.split(" "); 
@@ -577,6 +599,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public void enemyBlockFieldClear() {
 		for(int i=0;i<enemyBlockField.length;i++) {
 			enemyBlockField[i]=0;
+		}
+	}
+	public void enemyFieldClear() {
+		for(int i=0;i<enemyField.length;i++) {
+			for(int j=0;j<enemyField[i].length;j++) {
+				enemyField[i][j]=0;
+			}
 		}
 	}
 	
@@ -920,7 +949,28 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 		
 		// 패배메세지...
-		
+		textField.setText("게임 패배ㅠㅠ");
+		clip.stop();
+		File bgm;
+        AudioInputStream stream;
+        AudioFormat format;
+        DataLine.Info info;
+        
+        bgm = new File("src/resource/defeat.MID"); // 사용시에는 개별 폴더로 변경할 것
+        
+        
+        try {
+               stream = AudioSystem.getAudioInputStream(bgm);
+               format = stream.getFormat();
+               info = new DataLine.Info(Clip.class, format);
+               clip = (Clip)AudioSystem.getLine(info);
+               clip.open(stream);
+               clip.start(); 
+               clip.loop(100); 
+               
+        } catch (Exception e) {
+           System.out.println("err : " + e);
+       }
 	}
 
 	public void dropPuyo() {  // 다음 뿌요 드랍(대기상태에서 꺼내서 낙하)
