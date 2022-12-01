@@ -170,6 +170,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 		
 		public void drawEnemyBlockField() {
+      
 			if (enemyFieldBlock != 0) {
 				int bigCount=enemyFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
 				int smallCount=enemyFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
@@ -194,6 +195,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						}
 						else
 							gc.drawImage(smallPuyoImg,412 + 16 * (i+1), 30, this);
+
 					}
 				}
 			}
@@ -229,7 +231,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
-			
+
 		}
 		
 		public void drawMapFrame() {
