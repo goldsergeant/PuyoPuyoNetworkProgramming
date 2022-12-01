@@ -218,6 +218,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
+			drawBlockField(myFieldBlock);
+			drawEnemyBlockField(enemyFieldBlock);
 		}
 		
 		public void drawMapFrame() {
@@ -255,8 +257,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				drawField();
 				drawControlPuyo();
 				drawMapFrame();
-				drawBlockField(enemyFieldBlock);
-				drawEnemyBlockField(enemyFieldBlock);
 				break;
 			}
 		}
@@ -401,10 +401,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyCheckGravity = 1;
 		} else if (cm.code.matches("503")) {
 			myFieldBlock += Integer.parseInt(cm.data);
-			gameScreen.drawBlockField(enemyFieldBlock);
 		} else if (cm.code.matches("504")) {
 			enemyFieldBlock += Integer.parseInt(cm.data);
-			gameScreen.drawEnemyBlockField(enemyFieldBlock);
 		} else if(cm.code.matches("600")) {
 			destroyMusic(Integer.parseInt(cm.data));
 		}
@@ -526,10 +524,25 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		}
 	}
 	
+	public void myBlockFieldClear() {
+		for(int i=0;i<myBlockField.length;i++) {
+			myBlockField[i]=0;
+		}
+	}
+	
+	public void enemyBlockFieldClear() {
+		for(int i=0;i<enemyBlockField.length;i++) {
+			enemyBlockField[i]=0;
+		}
+	}
+	
 	public int flushBlock() { // 대기중이던 방해 뿌요 공격
 		int temp = 0;
 		for (int i = 1; i < 7; i++) {
-			if (myFieldBlock == 0) break;
+			if (myFieldBlock == 0) {
+				myBlockFieldClear();
+				break;
+			}
 			myField[startY - 1][i] = 6;
 			myFieldBlock--;
 			temp++;
@@ -540,7 +553,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int enemyFlushBlock() {
 		int temp = 0;
 		for (int i = 1; i < 7; i++) {
-			if (enemyFieldBlock == 0) break;
+			if (enemyFieldBlock == 0) {
+				enemyBlockFieldClear();
+				break;
+			}
 			enemyField[startY - 1][i] = 6;
 			enemyFieldBlock--;
 			temp++;
