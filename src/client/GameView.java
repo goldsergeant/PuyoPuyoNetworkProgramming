@@ -729,13 +729,13 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		enemyScore += enemyDestroyCount * 10;
 		
 		if (enemyFieldBlock > 0) {
-			enemyFieldBlock -= destroyCount;
+			enemyFieldBlock -= enemyDestroyCount;
 			if (enemyFieldBlock < 0) {
 				myFieldBlock += Math.abs(enemyFieldBlock);
 				enemyFieldBlock = 0;
 			}
 		} else {
-			myFieldBlock += destroyCount;
+			myFieldBlock += enemyDestroyCount;
 		}
 		enemyClearVisitedField();
 		enemyCheckGravity = 1;
