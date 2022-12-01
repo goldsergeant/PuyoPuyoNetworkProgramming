@@ -164,6 +164,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 						if(i>0&&myBlockField[i-1]==2) {
 							point+=32;
 							gc.drawImage(smallPuyoImg, point, 30, this);
+						}else if(i==0) {
+							point+=32;
+							gc.drawImage(smallPuyoImg, point, 30, this);
 						}
 						else {
 							point+=16;
@@ -190,13 +193,16 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		            smallCount--;
 		            i++;
 		        }
-				int point=412;
+				int point=32*12;
 				for(i=0;i<enemyBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
 					if(enemyBlockField[i]==2) {
 						point+=32;
 						gc.drawImage(bigPuyoImg, point,25, this);
 					}else if(enemyBlockField[i]==1) {
 						if(i>0&&enemyBlockField[i-1]==2) {
+							point+=32;
+							gc.drawImage(smallPuyoImg,point, 30, this);
+						}else if(i==0) {
 							point+=32;
 							gc.drawImage(smallPuyoImg,point, 30, this);
 						}
