@@ -142,47 +142,47 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		public void drawBlockField(int myFieldBlock) {
 			int bigCount=myFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
 			int smallCount=myFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
-			int i;
-			for(i=0;i<bigCount&&i<myBlockField.length;i++) {
-				myBlockField[i]=2;
-			}
-			i++;
-			for(int j=0;j<smallCount&&i<myBlockField.length;j++ ) {
-				myBlockField[j]=1;
-			}
+			int i=0;
+			 while(bigCount>0){
+		            myBlockField[i]=2;
+		            bigCount--;
+		            i++;
+		        }
+	        while(smallCount>0){
+	            myBlockField[i]=1;
+	            smallCount--;
+	            i++;
+	        }
+			
 			for(i=0;i<myBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
 				if(myBlockField[i]==2) {
 					if(gc!=null) {
-						gc.drawImage(bigPuyoImg, 16 * i, 30, this);
+						gc.drawImage(bigPuyoImg, 32 * i, 25, this);
 					}
 				}else if(myBlockField[i]==1) {
 					if(gc!=null) {
-						gc.drawImage(smallPuyoImg, 16 * i, 30, this);
+						if(i>0&&myBlockField[i-1]==2) {
+							gc.drawImage(smallPuyoImg, 32 * i, 30, this);
+						}
+						else
+							gc.drawImage(smallPuyoImg, 16 * i, 30, this);
 					}
 				}
 			}
+
 			repaint();
 		}
 		
-		public void drawEnemyBlockField(int enemyFieldBlock) {
-			int bigCount=enemyFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
-			int smallCount=enemyFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
-			int i;
-			for(i=0;i<bigCount&&i<enemyBlockField.length;i++) {
-				enemyBlockField[i]=2;
-			}
-			i++;
-			for(int j=0;j<smallCount&&i<enemyBlockField.length;j++ ) {
-				enemyBlockField[j]=1;
-			}
-			for(i=0;i<enemyBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
-				if(enemyBlockField[i]==2) {
+		public void drawEnemyBlockField(String[] arr) {
+			
+			for(int i=0;i<arr.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
+				if(Integer.parseInt(arr[i])==2) {
 					if(gc!=null) {
-						gc.drawImage(bigPuyoImg, 32*12+16 * i,30, this);
+						gc.drawImage(bigPuyoImg, 32*10+16 * i,25, this);
 					}
-				}else if(enemyBlockField[i]==1) {
+				}else if(Integer.parseInt(arr[i])==1) {
 					if(gc!=null) {
-						gc.drawImage(smallPuyoImg,32*12+16 * i, 30, this);
+						gc.drawImage(smallPuyoImg,32*10+16 * i, 30, this);
 					}
 				}
 			}
@@ -219,7 +219,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
 			drawBlockField(myFieldBlock);
-			drawEnemyBlockField(enemyFieldBlock);
+			//drawEnemyBlockField(enemyBlockArray);
 		}
 		
 		public void drawMapFrame() {
@@ -401,9 +401,17 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyCheckGravity = 1;
 		} else if (cm.code.matches("503")) {
 			myFieldBlock += Integer.parseInt(cm.data);
+			String msg="";
+			for(int i=0;i<myBlockField.length;i++) {
+				msg+=myBlockField[i]+" ";
+			}
+			roomList.SendMessage(msg, "505");
 		} else if (cm.code.matches("504")) {
 			enemyFieldBlock += Integer.parseInt(cm.data);
-		} else if(cm.code.matches("600")) {
+		} else if (cm.code.matches("505")) {
+			String []arr=cm.data.split(" ");
+			gameScreen.drawEnemyBlockField(arr);
+		}else if(cm.code.matches("600")) {
 			destroyMusic(Integer.parseInt(cm.data));
 		}
 	}

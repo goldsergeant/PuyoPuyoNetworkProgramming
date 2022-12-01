@@ -306,6 +306,13 @@ public class MainGameServer extends JFrame {
 							us.WriteGameMsg(cm);
 						}
 					}
+				} else if(cm.code.matches("505")){
+					for(int i=0;i<user_vc.size();i++) {
+						UserService us=user_vc.get(i);
+						if (us.userName.equals(userStatus.get(cm.userName))) {
+							us.WriteGameMsg(cm);
+						}
+					}
 				} else if(cm.code.matches("600")){
 					for (int i = 0; i < user_vc.size(); i++) {
 						UserService us = user_vc.get(i);

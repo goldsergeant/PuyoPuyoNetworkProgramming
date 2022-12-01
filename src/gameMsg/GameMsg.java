@@ -32,6 +32,7 @@ public class GameMsg implements Serializable {
 	 * 502: 뿌요 위치 저장
 	 * 503: 공격 뿌요 생성
 	 * 504: 공격 뿌요 드랍
+	 * 505: 내 공격 뿌요 필드 값
 	 * 600: 콤보 효과음
 	 * 900: 로그아웃
 	 */
