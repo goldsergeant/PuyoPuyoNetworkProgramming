@@ -115,8 +115,7 @@ public class MainGameClientStart extends JFrame {
       AudioFormat format;
       DataLine.Info info;
       
-      bgm = new File("src/resource/start.MID"); // 사용시에는 개별 폴더로 변경할 것
-    // 현재 파일 없는 상태, 게임에서 추출해서 넣은뒤 수정하겠음
+      bgm = new File("src/resource/start.MID");
       
       
       try {
