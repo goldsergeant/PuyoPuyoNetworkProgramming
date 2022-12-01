@@ -173,16 +173,20 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			repaint();
 		}
 		
-		public void drawEnemyBlockField(String[] arr) {
+		public void drawEnemyBlockField() {
 			
-			for(int i=0;i<arr.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
-				if(Integer.parseInt(arr[i])==2) {
+			for(int i=0;i<enemyBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
+				if(enemyBlockField[i]==2) {
 					if(gc!=null) {
-						gc.drawImage(bigPuyoImg, 32*10+16 * i,25, this);
+						gc.drawImage(bigPuyoImg, 32*12+32 * i,25, this);
 					}
-				}else if(Integer.parseInt(arr[i])==1) {
+				}else if(enemyBlockField[i]==1) {
 					if(gc!=null) {
-						gc.drawImage(smallPuyoImg,32*10+16 * i, 30, this);
+						if(i>0&&enemyBlockField[i-1]==2) {
+							gc.drawImage(smallPuyoImg, 32*12+32 * i, 30, this);
+						}
+						else
+							gc.drawImage(smallPuyoImg, 32*12+16 * i, 30, this);
 					}
 				}
 			}
@@ -219,7 +223,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
 			drawBlockField(myFieldBlock);
-			//drawEnemyBlockField(enemyBlockArray);
+			drawEnemyBlockField();
 		}
 		
 		public void drawMapFrame() {
@@ -410,7 +414,9 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyFieldBlock += Integer.parseInt(cm.data);
 		} else if (cm.code.matches("505")) {
 			String []arr=cm.data.split(" ");
-			gameScreen.drawEnemyBlockField(arr);
+			for(int i=0;i<arr.length;i++) {
+				enemyBlockField[i]=Integer.parseInt(arr[i]);
+			}
 		}else if(cm.code.matches("600")) {
 			destroyMusic(Integer.parseInt(cm.data));
 		}
