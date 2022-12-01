@@ -139,50 +139,61 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				new ImageIcon("src/resource/puyoBlock.png").getImage()
 		};
 		
-		public void drawBlockField(int myFieldBlock) {
-			int bigCount=myFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
-			int smallCount=myFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
-			int i=0;
-			 while(bigCount>0){
-		            myBlockField[i]=2;
-		            bigCount--;
+		public void drawBlockField() {
+			if (myFieldBlock != 0) {
+				int bigCount=myFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
+				int smallCount=myFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
+				int i=0;
+				 while(bigCount>0){
+			            myBlockField[i]=2;
+			            bigCount--;
+			            i++;
+			        }
+		        while(smallCount>0){
+		            myBlockField[i]=1;
+		            smallCount--;
 		            i++;
 		        }
-	        while(smallCount>0){
-	            myBlockField[i]=1;
-	            smallCount--;
-	            i++;
-	        }
-			
-			for(i=0;i<myBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
-				if(myBlockField[i]==2) {
-					if(gc!=null) {
-						gc.drawImage(bigPuyoImg, 32 * i, 25, this);
-					}
-				}else if(myBlockField[i]==1) {
-					if(gc!=null) {
+				
+				for(i=0;i<myBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
+					if(myBlockField[i]==2) {
+						gc.drawImage(bigPuyoImg, 32 * (i+1), 25, this);
+					}else if(myBlockField[i]==1) {
 						if(i>0&&myBlockField[i-1]==2) {
-							gc.drawImage(smallPuyoImg, 32 * i, 30, this);
+							gc.drawImage(smallPuyoImg, 32 * (i+1), 30, this);
 						}
 						else
-							gc.drawImage(smallPuyoImg, 16 * i, 30, this);
+							gc.drawImage(smallPuyoImg, 16 * (i+1), 30, this);
 					}
 				}
 			}
-
-			repaint();
 		}
 		
-		public void drawEnemyBlockField(String[] arr) {
-			
-			for(int i=0;i<arr.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
-				if(Integer.parseInt(arr[i])==2) {
-					if(gc!=null) {
-						gc.drawImage(bigPuyoImg, 32*10+16 * i,25, this);
-					}
-				}else if(Integer.parseInt(arr[i])==1) {
-					if(gc!=null) {
-						gc.drawImage(smallPuyoImg,32*10+16 * i, 30, this);
+		public void drawEnemyBlockField() {
+			if (enemyFieldBlock != 0) {
+				int bigCount=enemyFieldBlock/5; //5개의 작은 뿌요는 1개의 큰 뿌요
+				int smallCount=enemyFieldBlock%5; //5개로 나누고 나머지는 작은 뿌요
+				int i=0;
+				while(bigCount>0){
+					enemyBlockField[i]=2;
+		            bigCount--;
+		            i++;
+		        }
+		        while(smallCount>0){
+		        	enemyBlockField[i]=1;
+		            smallCount--;
+		            i++;
+		        }
+				
+				for(i=0;i<enemyBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
+					if(enemyBlockField[i]==2) {
+						gc.drawImage(bigPuyoImg, 412 + 16 * (i+1),25, this);
+					}else if(enemyBlockField[i]==1) {
+						if(i>0&&enemyBlockField[i-1]==2) {
+							gc.drawImage(smallPuyoImg,412 + 32 * (i+1), 30, this);
+						}
+						else
+							gc.drawImage(smallPuyoImg,412 + 16 * (i+1), 30, this);
 					}
 				}
 			}
@@ -218,8 +229,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			gc.drawImage(puyoTypeImg[curP2], 32 * subX, 32 * subY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP1], 32 * 12 + 32 * enemyCurX, 32 * enemyCurY, this);
 			gc.drawImage(puyoTypeImg[enemyCurP2], 32 * 12 + 32 * enemySubX, 32 * enemySubY, this);
-			drawBlockField(myFieldBlock);
-			//drawEnemyBlockField(enemyBlockArray);
+			
 		}
 		
 		public void drawMapFrame() {
@@ -257,6 +267,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				drawField();
 				drawControlPuyo();
 				drawMapFrame();
+				drawBlockField();
+				drawEnemyBlockField();
 				break;
 			}
 		}
@@ -380,6 +392,10 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			String enemyInformation[] = cm.data.split(" "); 
 			enemyNextP1 = Integer.parseInt(enemyInformation[0]);
 			enemyNextP2 = Integer.parseInt(enemyInformation[1]);
+			while (enemyFieldBlock > 0) {
+				enemyFlushBlock();
+				enemyGravity();
+			}
 		} else if (cm.code.matches("501")) {
 			String enemyInformation[] = cm.data.split(" "); 
 			enemyCurP1 = Integer.parseInt(enemyInformation[0]);
@@ -399,19 +415,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			enemyField[enemyCurY][enemyCurX] = enemyCurP1;
 			enemyField[enemySubY][enemySubX] = enemyCurP2;
 			enemyCheckGravity = 1;
-		} else if (cm.code.matches("503")) {
-			myFieldBlock += Integer.parseInt(cm.data);
-			String msg="";
-			for(int i=0;i<myBlockField.length;i++) {
-				msg+=myBlockField[i]+" ";
-			}
-			roomList.SendMessage(msg, "505");
-		} else if (cm.code.matches("504")) {
-			enemyFieldBlock += Integer.parseInt(cm.data);
-		} else if (cm.code.matches("505")) {
-			String []arr=cm.data.split(" ");
-			gameScreen.drawEnemyBlockField(arr);
-		}else if(cm.code.matches("600")) {
+		} else if(cm.code.matches("600")) {
 			destroyMusic(Integer.parseInt(cm.data));
 		}
 	}
@@ -426,6 +430,8 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 
 	public void initGame() { // 게임 시작시 변수 초기 설정
 
+		myBlockFieldClear();
+		enemyBlockFieldClear();
 		visitedX.clear();
 		visitedY.clear();
 		enemyVisitedX.clear();
@@ -514,7 +520,7 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 			if (checkDropDone()) {
 				comboCount=0;
 				while (myFieldBlock > 0) {
-					roomList.SendMessage(String.valueOf(flushBlock()), "504");
+					flushBlock();
 					gravity();
 				}
 				checkChainRule();
@@ -524,10 +530,6 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 				checkGravity = 1;
 				dropPuyo();
 				controlPuyoCut = 0;
-			}
-			while (enemyFieldBlock > 0) {
-				enemyFlushBlock();
-				enemyGravity();
 			}
 		}
 	}
@@ -547,13 +549,11 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int flushBlock() { // 대기중이던 방해 뿌요 공격
 		int temp = 0;
 		for (int i = 1; i < 7; i++) {
-			if (myFieldBlock == 0) {
-				myBlockFieldClear();
-				break;
-			}
-			myField[startY - 1][i] = 6;
+			myField[startY][i] = 6;
 			myFieldBlock--;
 			temp++;
+			if (myFieldBlock == 0)
+				myBlockFieldClear();
 		}
 		return temp;
 	}
@@ -561,13 +561,11 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 	public int enemyFlushBlock() {
 		int temp = 0;
 		for (int i = 1; i < 7; i++) {
-			if (enemyFieldBlock == 0) {
-				enemyBlockFieldClear();
-				break;
-			}
-			enemyField[startY - 1][i] = 6;
+			enemyField[startY][i] = 6;
 			enemyFieldBlock--;
 			temp++;
+			if (enemyFieldBlock == 0)
+				enemyBlockFieldClear();
 		}
 		return temp;
 	}
@@ -710,11 +708,11 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		if (myFieldBlock > 0) {
 			myFieldBlock -= destroyCount;
 			if (myFieldBlock < 0) {
-				roomList.SendMessage(String.valueOf(Math.abs(myFieldBlock)), "503");
+				enemyFieldBlock += Math.abs(myFieldBlock);
 				myFieldBlock = 0;
 			}
 		} else {
-			roomList.SendMessage(String.valueOf(destroyCount), "503");
+			enemyFieldBlock += destroyCount;
 		}
 		clearVisitedField();
 		checkGravity = 1;
@@ -725,7 +723,18 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		for (int i = 0; i < enemyVisitedX.size(); i++) {
 			enemyField[enemyVisitedX.get(i)][enemyVisitedY.get(i)] = 0;
 		}
+
 		enemyScore += enemyDestroyCount * 10;
+		
+		if (enemyFieldBlock > 0) {
+			enemyFieldBlock -= destroyCount;
+			if (enemyFieldBlock < 0) {
+				myFieldBlock += Math.abs(enemyFieldBlock);
+				enemyFieldBlock = 0;
+			}
+		} else {
+			myFieldBlock += destroyCount;
+		}
 		enemyClearVisitedField();
 		enemyCheckGravity = 1;
 	}
@@ -872,27 +881,36 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		nextP2 = (int)(Math.random() * 5 + 1);
 		roomList.SendMessage(nextP1 + " " + nextP2, "500");
 		curShape = 0;
-		
-		if (myField[startY][startX] == 0) {
-			curX = startX;
-			curY = startY;
-			subX = startX;
-			subY = startY - 1;
-			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
-		} else if (myField[startY][startX - 1] == 0) {
-			curX = startX - 1;
-			curY = startY;
-			subX = startX - 1;
-			subY = startY - 1;
-			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
-		} else if (myField[startY][startX + 1] == 0) {
-			curX = startX + 1;
-			curY = startY;
-			subX = startX + 1;
-			subY = startY - 1;
-			roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
-		} else {
-			checkGameOver();
+		while (true) {
+			if (myField[startY][startX] == 0) {
+				curX = startX;
+				curY = startY;
+				subX = startX;
+				subY = startY - 1;
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+				break;
+			} else if (myField[startY][startX - 1] == 0) {
+				curX = startX - 1;
+				curY = startY;
+				subX = startX - 1;
+				subY = startY - 1;
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+				break;
+			} else if (myField[startY][startX + 1] == 0) {
+				curX = startX + 1;
+				curY = startY;
+				subX = startX + 1;
+				subY = startY - 1;
+				roomList.SendMessage(curP1 + " " + curP2 + " " + curX + " " + curY + " " + subX + " " + subY, "501");
+				break;
+			} else {
+				if (myField[startY + 1][startX] != 0 && myField[startY + 1][startX - 1] != 0 && myField[startY + 1][startX + 1] != 0) {
+					checkGameOver();
+					break;
+				} else {
+					continue;
+				}
+			}
 		}
 	}
 

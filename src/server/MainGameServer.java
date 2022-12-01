@@ -106,13 +106,13 @@ public class MainGameServer extends JFrame {
 					AppendText("Waiting new clients ...");
 					client_socket = socket.accept();
 
-					AppendText("»õ·Î¿î »ç¿ëÀÚ from " + client_socket);
+					AppendText("ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ from " + client_socket);
 
 					UserService new_user = new UserService(client_socket);
 					userVec.add(new_user);
 					new_user.start();
 					userStatus.put(new_user.userName, "O");
-					AppendText("ÇöÀç »ç¿ëÀÚÀÇ ¼ö: " + userVec.size());
+					AppendText("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½: " + userVec.size());
 				} catch (IOException e) {
 					AppendText("accept() error");
 				}
@@ -154,7 +154,7 @@ public class MainGameServer extends JFrame {
 		public void Logout() {
 			userVec.removeElement(this);
 			this.client_socket = null;
-			AppendText("»ç¿ëÀÚ " + "[" + userName + "] °¡ ÅðÀåÇÏ¿´½À´Ï´Ù. ³²Àº »ç¿ëÀÚ ¼ö: " + userVec.size());
+			AppendText("ï¿½ï¿½ï¿½ï¿½ï¿½ " + "[" + userName + "] ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½: " + userVec.size());
 		}
 
 		public void WriteAllObject(GameMsg obj) {
@@ -230,7 +230,7 @@ public class MainGameServer extends JFrame {
 				AppendObject(cm);
 				if (cm.code.matches("100")) {
 					userName = cm.userName;
-					AppendText("»õ·Î¿î »ç¿ëÀÚ " + userName + " ÀÔÀå");
+					AppendText("ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ " + userName + " ï¿½ï¿½ï¿½ï¿½");
 					String msg = "";
 					for (String key : whoRoomMade.keySet()) {
 						msg += key + " " + whoRoomMade.get(key) + " ";
@@ -250,7 +250,7 @@ public class MainGameServer extends JFrame {
 					if (!(roomMap.containsKey(cm.data))) {
 						roomMap.put(cm.data.split(" ")[0], 1);
 						whoRoomMade.put(cm.data.split(" ")[0], cm.userName);
-						AppendText(String.format("¹æ »ý¼º: %s", cm.data));
+						AppendText(String.format("ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: %s", cm.data));
 					}
 					WriteAllObject(cm);
 				} else if (cm.code.matches("304")) {
@@ -288,27 +288,6 @@ public class MainGameServer extends JFrame {
 				} else if (cm.code.matches("502")) {
 					for (int i = 0; i < user_vc.size(); i++) {
 						UserService us = user_vc.get(i);
-						if (us.userName.equals(userStatus.get(cm.userName))) {
-							us.WriteGameMsg(cm);
-						}
-					}
-				} else if (cm.code.matches("503")) {
-					for (int i = 0; i < user_vc.size(); i++) {
-						UserService us = user_vc.get(i);
-						if (us.userName.equals(userStatus.get(cm.userName))) {
-							us.WriteGameMsg(cm);
-						}
-					}
-				} else if (cm.code.matches("504")) {
-					for (int i = 0; i < user_vc.size(); i++) {
-						UserService us = user_vc.get(i);
-						if (us.userName.equals(userStatus.get(cm.userName))) {
-							us.WriteGameMsg(cm);
-						}
-					}
-				} else if(cm.code.matches("505")){
-					for(int i=0;i<user_vc.size();i++) {
-						UserService us=user_vc.get(i);
 						if (us.userName.equals(userStatus.get(cm.userName))) {
 							us.WriteGameMsg(cm);
 						}
