@@ -154,16 +154,20 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		            smallCount--;
 		            i++;
 		        }
-				
+				int point=0; // 좌표. loop가 진행되면서 점점 커짐
 				for(i=0;i<myBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
 					if(myBlockField[i]==2) {
-						gc.drawImage(bigPuyoImg, 32 * (i+1), 25, this);
+						point+=32;
+						gc.drawImage(bigPuyoImg, point, 25, this);
 					}else if(myBlockField[i]==1) {
 						if(i>0&&myBlockField[i-1]==2) {
-							gc.drawImage(smallPuyoImg, 32 * (i+1), 30, this);
+							point+=32;
+							gc.drawImage(smallPuyoImg, point, 30, this);
 						}
-						else
-							gc.drawImage(smallPuyoImg, 16 * (i+1), 30, this);
+						else {
+							point+=16;
+							gc.drawImage(smallPuyoImg, point, 30, this);
+						}
 					}
 				}
 			}
@@ -185,17 +189,20 @@ public class GameView extends JFrame implements KeyListener, Runnable {
 		            smallCount--;
 		            i++;
 		        }
-				
+				int point=412;
 				for(i=0;i<enemyBlockField.length;i++) { //2면 큰뿌요 1이면 작은 뿌요
 					if(enemyBlockField[i]==2) {
-						gc.drawImage(bigPuyoImg, 412 + 16 * (i+1),25, this);
+						point+=32;
+						gc.drawImage(bigPuyoImg, point,25, this);
 					}else if(enemyBlockField[i]==1) {
 						if(i>0&&enemyBlockField[i-1]==2) {
-							gc.drawImage(smallPuyoImg,412 + 32 * (i+1), 30, this);
+							point+=32;
+							gc.drawImage(smallPuyoImg,point, 30, this);
 						}
-						else
-							gc.drawImage(smallPuyoImg,412 + 16 * (i+1), 30, this);
-
+						else {
+							point+=16;
+							gc.drawImage(smallPuyoImg,point, 30, this);
+						}
 					}
 				}
 			}
