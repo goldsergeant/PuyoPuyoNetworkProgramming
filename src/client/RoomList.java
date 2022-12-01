@@ -232,12 +232,6 @@ public class RoomList extends JFrame {
 							view.requestFocus();
 						}else if(cm.code.matches("502")) {
 							view.readMessage(cm);
-						}else if(cm.code.matches("503")) {
-							view.readMessage(cm);
-						}else if(cm.code.matches("504")) {
-							view.readMessage(cm);
-						}else if (cm.code.matches("505")) {
-							view.readMessage(cm);;
 						}else if(cm.code.matches("600")) {
 							view.readMessage(cm);
 						}
